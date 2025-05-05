@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"sort"
 	"strings"
 	"text/template"
 
 	"github.com/atotto/clipboard"
 	"github.com/gkwa/travelingtiger/app/templates"
+	"github.com/gkwa/travelingtiger/app/templates/lister"
 )
 
 // Renderer handles template rendering operations
 type Renderer struct {
 	templateFS fs.FS
 	templates  *template.Template
+	lister     *lister.Lister
 }
 
 // NewRenderer creates a new renderer instance
@@ -30,6 +31,7 @@ func NewRenderer() (*Renderer, error) {
 	return &Renderer{
 		templateFS: templates.TemplateFS,
 		templates:  tmpl,
+		lister:     lister.NewLister(),
 	}, nil
 }
 
@@ -40,29 +42,29 @@ func (r *Renderer) Render(templateName, outFile string) error {
 	_, err := fs.Stat(r.templateFS, templatePath)
 	if err != nil {
 		// Template file not found, try substring matching
-		matches, matchErr := r.findSubstringMatches(templateName)
+		matches, matchErr := r.lister.FindSubstringMatches(templateName)
 		if matchErr != nil {
 			return matchErr
 		}
-		
+
 		if len(matches) == 1 {
 			// If only one match, use it automatically
 			templateName = matches[0]
 		} else if len(matches) > 1 {
 			// Multiple matches, return error with suggestions
-			return fmt.Errorf("template '%s' not found. Did you mean one of these:\n%s", 
-				templateName, formatTemplateList(matches))
+			return fmt.Errorf("template '%s' not found. Did you mean one of these:\n%s",
+				templateName, r.lister.FormatTemplateList(matches))
 		} else {
 			// No matches, show all available templates
 			return r.handleTemplateNotFound(templateName)
 		}
 	}
-	
+
 	// Check if template definition exists
 	tmpl := r.templates.Lookup(templateName)
 	if tmpl == nil {
 		// Template file exists but the definition does not
-		return fmt.Errorf("template file '%s.tmpl' exists but no template definition found with name '%s'", 
+		return fmt.Errorf("template file '%s.tmpl' exists but no template definition found with name '%s'",
 			templateName, templateName)
 	}
 
@@ -82,40 +84,17 @@ func (r *Renderer) Render(templateName, outFile string) error {
 	return r.handleOutput(content, outFile)
 }
 
-// findSubstringMatches returns a list of template names that contain the given substring
-func (r *Renderer) findSubstringMatches(substring string) ([]string, error) {
-	allTemplates, err := r.listTemplates()
+// handleTemplateNotFound generates an error message with available templates
+func (r *Renderer) handleTemplateNotFound(templateName string) error {
+	// List available templates for error message
+	templates, err := r.lister.ListTemplates()
 	if err != nil {
-		return nil, fmt.Errorf("error finding matching templates: %w", err)
+		return fmt.Errorf("template '%s' not found and could not list available templates: %w", templateName, err)
 	}
-	
-	var matches []string
-	lowercaseSubstr := strings.ToLower(substring)
-	
-	for _, tmpl := range allTemplates {
-		if strings.Contains(strings.ToLower(tmpl), lowercaseSubstr) {
-			matches = append(matches, tmpl)
-		}
+	if len(templates) == 0 {
+		return fmt.Errorf("template '%s' not found and no templates are available", templateName)
 	}
-	
-	// Sort matches alphabetically
-	sort.Strings(matches)
-	
-	return matches, nil
-}
-
-// formatTemplateList formats a slice of template names as a newline-delimited list
-func formatTemplateList(templates []string) string {
-	// Sort templates alphabetically
-	sort.Strings(templates)
-	
-	var builder strings.Builder
-	for _, tmpl := range templates {
-		builder.WriteString("  ")
-		builder.WriteString(tmpl)
-		builder.WriteString("\n")
-	}
-	return builder.String()
+	return fmt.Errorf("template '%s' not found. Available templates:\n%s", templateName, r.lister.FormatTemplateList(templates))
 }
 
 // cleanOutput removes excess whitespace and trailing characters from the template output
@@ -142,54 +121,6 @@ func cleanOutput(content string) string {
 	content = strings.TrimSpace(content) + "\n"
 
 	return content
-}
-
-// handleTemplateNotFound generates an error message with available templates
-func (r *Renderer) handleTemplateNotFound(templateName string) error {
-	// List available templates for error message
-	templates, err := r.listTemplates()
-	if err != nil {
-		return fmt.Errorf("template '%s' not found and could not list available templates: %w", templateName, err)
-	}
-	if len(templates) == 0 {
-		return fmt.Errorf("template '%s' not found and no templates are available", templateName)
-	}
-	return fmt.Errorf("template '%s' not found. Available templates:\n%s", templateName, formatTemplateList(templates))
-}
-
-// listTemplates returns a list of available template names
-func (r *Renderer) listTemplates() ([]string, error) {
-	var templates []string
-	err := fs.WalkDir(r.templateFS, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() && strings.HasSuffix(path, ".tmpl") {
-			// Remove the .tmpl extension
-			templates = append(templates, strings.TrimSuffix(path, ".tmpl"))
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	
-	// Sort templates alphabetically
-	sort.Strings(templates)
-	
-	return templates, nil
-}
-
-// listDefinedTemplates returns template names that have actual definitions
-func (r *Renderer) listDefinedTemplates() []string {
-	var definedTemplates []string
-	for _, tmplName := range r.templates.Templates() {
-		if tmplName.Name() != "" {
-			definedTemplates = append(definedTemplates, tmplName.Name())
-		}
-	}
-	sort.Strings(definedTemplates)
-	return definedTemplates
 }
 
 // handleOutput sends the rendered content to the appropriate destination
