@@ -1,0 +1,74 @@
+{{/* 
+This is an example of template composition in Go's template system
+that mimics Jinja2's template inheritance
+*/}}
+
+{{define "base"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{template "title" .}}</title>
+    <style>
+        {{template "styles" .}}
+    </style>
+</head>
+<body>
+    <header>
+        {{template "header" .}}
+    </header>
+    
+    <main>
+        {{template "content" .}}
+    </main>
+    
+    <footer>
+        {{template "footer" .}}
+    </footer>
+</body>
+</html>
+{{end}}
+
+{{/* Default blocks that can be overridden */}}
+{{define "title"}}Default Title{{end}}
+{{define "styles"}}
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    header, footer { background: #f4f4f4; padding: 10px; }
+{{end}}
+{{define "header"}}Default Header{{end}}
+{{define "content"}}Default Content{{end}}
+{{define "footer"}}Default Footer{{end}}
+
+{{/* 
+Example of extending the base template (like Jinja2 inheritance)
+by overriding specific blocks
+*/}}
+
+{{/* First define all custom blocks */}}
+{{define "custom-title"}}My Custom Page{{end}}
+{{define "custom-header"}}
+    <h1>Welcome to My Custom Page</h1>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+    </nav>
+{{end}}
+{{define "custom-content"}}
+    <section>
+        <h2>Main Content</h2>
+        <p>This is the custom content for this page.</p>
+    </section>
+{{end}}
+
+{{/* Now create the page that uses these custom blocks */}}
+{{define "page"}}
+    {{template "base" .}}
+{{end}}
+
+{{/* Apply the custom blocks */}}
+{{template "custom-title" .}}
+{{template "custom-header" .}}
+{{template "custom-content" .}}
+
+{{/* Render the page */}}
+{{template "page" .}}
+

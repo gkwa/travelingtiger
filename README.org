@@ -1,0 +1,52 @@
+* TravelingTiger
+
+A command-line utility for rendering Go templates embedded in the application binary.
+
+** Usage Cheatsheet
+
+#+BEGIN_SRC shell
+# List all available templates
+travelingtiger templates
+travelingtiger t  # Short alias
+
+# Render a template to clipboard (default)
+travelingtiger render python-package
+
+# Render a template to stdout
+travelingtiger render --outfile=- python-package | less
+
+# Render a template to a file
+travelingtiger render --outfile=output.txt python-package
+
+# Substring matching - will find and use 'python-package' template
+travelingtiger render python
+#+END_SRC
+
+** Description
+
+TravelingTiger helps you quickly access and use templated text snippets that you frequently need when conversing with AI tools. Templates are embedded directly in the binary, making them portable and easily accessible.
+
+The application follows the Unix philosophy of silence for the happy path, sending output to clipboard by default or to a specified file.
+
+** Features
+
+- Substring matching: If an exact template name isn't found, TravelingTiger will search for templates that contain the provided string:
+  - If a single match is found, it will be used automatically
+  - If multiple matches are found, they will be displayed as suggestions
+  - If no matches are found, all available templates will be listed
+
+** Installation
+
+#+BEGIN_SRC shell
+go install github.com/gkwa/travelingtiger@latest
+#+END_SRC
+
+** Available Templates
+
+Some of the available templates include:
+- golang-app
+- python-package
+- common-apps
+- test
+
+Run =travelingtiger templates= to see all available templates.
