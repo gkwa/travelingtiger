@@ -1,0 +1,25 @@
+{{define "python-imports-absolute"}}
+All imports should be absolute similar to this:
+
+```
+import pathlib
+import rich
+import os
+```
+
+etc.
+
+So for example instead of this:
+
+```
+from typing import List, Dict, Tuple, Any
+from dataclasses import dataclass
+```
+
+use this:
+
+```
+import typing
+import dataclasses
+```
+{{end}}
