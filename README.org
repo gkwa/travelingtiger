@@ -1,6 +1,6 @@
 * TravelingTiger
 
-A command-line utility for rendering Go templates embedded in the application binary.
+A command-line utility for managing AI prompts using composable golang templates.
 
 ** Usage Cheatsheet
 
