@@ -1,0 +1,2704 @@
+{{define "modprompt-demo"}}
+I've included modprompt source in the modprompt_source xml tags below to give you an understanding of the modprompt API.
+
+Please create demo usage of the modprompt project.
+{{template "pnpm-project" . }}
+
+## use vite if you need a build tool
+{{template "use-vite" . }}
+
+<modprompt_source>
+{{template "modprompt-source" .}}
+</modprompt_source>
+{{end}}
+
+{{template "modprompt-demo"}}
+
+
+
+
+
+
+{{define "modprompt-source"}}
+-- codegen/db.yml --
+alpaca:
+  id: alpaca
+  name: Alpaca
+  system:
+    schema: "{system}"
+    message: "Below is an instruction that describes a task. Write a response that appropriately completes the request."
+  user: |-
+    ### Instruction:
+    {prompt}
+  assistant: "### Response:"
+  linebreaks:
+    system: 2
+    user: 2
+chatml:
+  id: "chatml"
+  name: "ChatMl"
+  system:
+    schema: |-
+      <|im_start|>system
+      {system}<|im_end|>
+  user: |-
+    <|im_start|>user
+    {prompt}<|im_end|>
+  assistant: "<|im_start|>assistant"
+  linebreaks:
+    system: 1
+    user: 1
+    assistant: 1
+  stop:
+    - "<|im_end|>"
+  afterShot: "<|im_end|>\n"
+  tags:
+    think:  <think>
+    endThink: </think>
+chatml-tools:
+  id: "chatml-tools"
+  name: "ChatMl tools"
+  system:
+    schema: "<|im_start|>system\n{system}<|im_end|>"
+    message: |-
+      You are a helpful assistant with tool calling capabilities. You may call one or more functions to assist with the user query.
+      You are provided with function signatures within <tools></tools> XML tags:
+      <tools>
+      {tools}
+      </tools>
+      
+      For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:
+      <tool_call>
+      [{"name": <function-name>, "arguments": <args-json-object>}]
+      </tool_call>
+  user: |-
+    <|im_start|>user
+    {prompt}<|im_end|>
+  assistant: "<|im_start|>assistant"
+  linebreaks:
+    system: 1
+    user: 1
+    assistant: 1
+  stop:
+    - "<|im_end|>"
+  afterShot: |-
+     <|im_end|>
+
+  tools:
+    def: "{system}"
+    call: |-
+      <tool_call>
+      {tools}
+      </tool_call>
+    response: |- 
+      <|im_start|>user
+      <tool_response>
+      {tools_response}
+      </tool_response><|im_end|>
+  tags:
+    think:  <think>
+    endThink: </think>
+codestral:
+  id: codestral
+  name: Codestral
+  user: "[INST] {prompt}"
+  assistant: " [/INST]"
+  stop:
+    - "</s>"
+  afterShot: "\n"
+  linebreaks:
+    system: 2
+  system:
+    schema: |-
+      <<SYS>>
+      {system}
+      <</SYS>>
+command-r:
+  id: command-r
+  name: Command-R
+  user: "<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{prompt}<|END_OF_TURN_TOKEN|>"
+  assistant: "<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>"
+  prefix: "<BOS_TOKEN>"
+  stop:
+    - "<|END_OF_TURN_TOKEN|>"
+  linebreaks:
+    user: 1
+  system:
+    schema: "<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{system}<|END_OF_TURN_TOKEN|>"
+deephermes:
+  id: deephermes
+  name: Deephermes
+  user: |-
+    <|start_header_id|>user<|end_header_id|>
+    {prompt}<|eot_id|>
+  assistant: "<|start_header_id|>assistant<|end_header_id|>"
+  stop:
+    - "<|eot_id|>"
+    - "<|end_of_text|>"
+  afterShot: "<|eot_id|>\n\n"
+  system:
+    schema: |-
+      <|start_header_id|>system<|end_header_id|>
+      
+      {system}<|eot_id|>
+    message: |-
+      You are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions. Here are the available tools: <tools> {tools} </tools>. For each function call return a json object with function name and arguments within <tool_call></tool_call> XML tags as follows:
+      <tool_call>
+      [{"arguments": <args-dict>, "name": <function-name>}]
+      </tool_call>
+  tools:
+    def: "{system}"
+    call: |-
+      <tool_call>
+      {tools}
+      </tool_call>
+    response: |-
+      <|start_header_id|>user<|end_header_id|>
+      <tool_response>
+      {tools_response}
+      </tool_response><|eot_id|>
+
+deepseek:
+  id: deepseek
+  name: Deepseek
+  system:
+    schema: "{system}"
+    message: "You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer."
+  afterShot: "\n"
+  user: |-
+    ### Instruction:
+    {prompt}
+  assistant: "### Response:"
+  linebreaks:
+    user: 1
+    system: 1
+  stop:
+    - "<|EOT|>"
+    - "### Instruction:"
+deepseek2:
+  id: deepseek2
+  name: Deepseek 2
+  system:
+    schema: "<｜begin▁of▁sentence｜>{system}"
+  user: "User: {prompt}"
+  assistant: "Assistant:"
+  linebreaks:
+    user: 2
+    system: 2
+  stop:
+    - "<｜end▁of▁sentence｜>"
+    - "<｜tool▁calls▁end｜>"
+deepseek3:
+  id: deepseek3
+  name: Deepseek 3
+  system:
+    schema: "<｜begin▁of▁sentence｜>{system}"
+  user: "<｜User｜>{prompt}"
+  assistant: "<｜Assistant｜>"
+  linebreaks:
+    user: 2
+    system: 2
+  stop:
+    - "<｜end▁of▁sentence｜>"
+    - "<｜tool▁calls▁end｜>"
+  afterShot: "<｜end▁of▁sentence｜>"
+exaone:
+  id: exaone
+  name: Exaone
+  system:
+    schema: "[|system|]{system}[|endofturn|]"
+    message: You are EXAONE model from LG AI Research, a helpful assistant.
+  user: "[|user|]{prompt}[|endofturn|]"
+  assistant: "[|assistant|]"
+  afterShot: "[|endofturn|]"
+  stop:
+    - "[|endofturn|]"
+  linebreaks:
+    user: 1
+    system: 1
+gemma:
+  id: gemma
+  name: Gemma
+  user: |-
+    <start_of_turn>user
+    {prompt}
+     <end_of_turn>
+     
+  assistant: |-   
+    <start_of_turn>model
+  stop:
+    - "<end_of_turn>"
+  afterShot: "<end_of_turn>"
+granite:
+  id: granite
+  name: Granite
+  user: "<|start_of_role|>user<|end_of_role|>{prompt}<|end_of_text|>"
+  assistant: "<|start_of_role|>assistant<|end_of_role|>"
+  stop:
+    - "<|end_of_text|>"
+    - "<|start_of_role|>"
+  system:
+    schema: "<|start_of_role|>system<|end_of_role|>{system}<|end_of_text|>"
+    message: "You are Granite, developed by IBM. You are a helpful AI assistant."
+  linebreaks:
+    user: 1
+    system: 1
+  afterShot: "<|end_of_text|>\n"
+granite-think:
+  id: granite-think
+  name: Granite think
+  user: "<|start_of_role|>user<|end_of_role|>{prompt}<|end_of_text|>"
+  assistant: "<|start_of_role|>assistant<|end_of_role|>"
+  stop:
+    - "<|end_of_text|>"
+    - "<|start_of_role|>"
+  system:
+    schema: "<|start_of_role|>system<|end_of_role|>{system}<|end_of_text|>"
+    message: "You are Granite, developed by IBM. You are a helpful AI assistant. Respond to every user query in a comprehensive and detailed way. You can write down your thoughts and reasoning process before responding. In the thought process, engage in a comprehensive cycle of analysis, summarization, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. In the response section, based on various attempts, explorations, and reflections from the thoughts section, systematically present the final solution that you deem correct. The response should summarize the thought process. Write your thoughts after 'Here is my thought process:' and write your response after 'Here is my response:' for each user query."
+  linebreaks:
+    user: 1
+    system: 1
+  afterShot: "<|end_of_text|>\n"
+granite-tools:
+  id: granite-tools
+  name: Granite tools
+  user: "<|start_of_role|>user<|end_of_role|>{prompt}<|end_of_text|>"
+  assistant: "<|start_of_role|>assistant<|end_of_role|>"
+  stop:
+    - "<|end_of_text|>"
+    - "<|start_of_role|>"
+  system:
+    schema: "<|start_of_role|>system<|end_of_role|>{system}<|end_of_text|>"
+    message: "You are Granite, developed by IBM. You are a helpful AI assistant with access to the following tools. When a tool is required to answer the user's query, respond with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request."
+  tools:
+    def: "<|start_of_role|>tools<|end_of_role|>{tools}<|end_of_text|>"
+    call: "<|tool_call|>{tools}"
+    response: "<|start_of_role|>tool_response<|end_of_role|>{tools_response}<|end_of_text|>\n"
+  linebreaks:
+    user: 1
+    system: 1
+    tools: 1
+  afterShot: "<|end_of_text|>\n"
+llama:
+  id: llama
+  name: Llama
+  system:
+    schema: |-
+      [INST] <<SYS>>
+      {system}
+      <</SYS>>
+    message: |-
+      You are a helpful, respectful and honest assistant. Always answer as helpfully as possible
+      
+      If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
+  user: "{prompt}"
+  assistant: " [/INST] "
+  linebreaks:
+    system: 2
+    user: 0
+  prefix: "<s>"
+  stop:
+    - "</s>"
+llama3:
+  id: llama3
+  name: Llama 3
+  user: |-
+    <|start_header_id|>user<|end_header_id|>
+    
+    {prompt}<|eot_id|>
+  assistant: "<|start_header_id|>assistant<|end_header_id|>"
+  stop:
+    - "<|eot_id|>"
+    - "<|end_of_text|>"
+  afterShot: "<|eot_id|>\n\n"
+  system:
+    schema: |-
+      <|start_header_id|>system<|end_header_id|>
+      
+      {system}<|eot_id|>
+llama3-think:
+  id: llama3-think
+  name: Llama 3 think
+  user: |-
+    <|start_header_id|>user<|end_header_id|>
+    
+    {prompt}<|eot_id|>
+  assistant: "<|start_header_id|>assistant<|end_header_id|>"
+  stop:
+    - "<|eot_id|>"
+    - "<|end_of_text|>"
+  afterShot: "<|eot_id|>\n\n"
+  system:
+    schema: |-
+      <|start_header_id|>system<|end_header_id|>
+      
+      {system}<|eot_id|>
+    message: "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem."
+llava:
+  id: llava
+  name: Llava
+  user: "USER: {prompt}"
+  assistant: "ASSISTANT:"
+  linebreaks:
+    user: 1
+minichat:
+  id: minichat
+  name: Minichat
+  user: "[|User|] {prompt} </s>"
+  assistant: "[|Assistant|]"
+  stop:
+    - "</s>"
+    - "[|User|]"
+  afterShot: "\n"
+  prefix: "<s> "
+mistral:
+  id: mistral
+  name: Mistral
+  user: "[INST] {prompt}"
+  assistant: " [/INST]"
+  stop:
+    - "</s>"
+  afterShot: "\n"
+mistral-system:
+  id: mistral-system
+  name: Mistral system
+  user: "[INST] {prompt}"
+  assistant: " [/INST]"
+  system:
+    schema: "[SYSTEM_PROMPT]{system}[/SYSTEM_PROMPT] "
+  stop:
+    - "</s>"
+  afterShot: "\n"
+mistral-system-tools:
+  id: mistral-system-tools
+  name: Mistral system tools
+  user: "[INST] {prompt} [/INST]"
+  assistant: ""
+  system:
+    schema: "[SYSTEM_PROMPT]{system}[/SYSTEM_PROMPT] "
+  stop:
+    - "</s>"
+  afterShot: "\n"
+  tools:
+    def: "[AVAILABLE_TOOLS]{tools}[/AVAILABLE_TOOLS]"
+    call: "[TOOL_CALLS]{tools}"
+    response: "[TOOL_RESULTS]{tools_response}[/TOOL_RESULTS]"
+nemotron:
+  id: nemotron
+  name: Nemotron
+  user: |-
+    <extra_id_1>User
+    {prompt}
+  assistant: "<extra_id_1>Assistant\n"
+  linebreaks:
+    system: 2
+    user: 1
+  system:
+    schema: |-
+      <extra_id_0>System
+      {system}
+  afterShot: "\n\n"
+none:
+  id: none
+  name: No template
+  user: "{prompt}"
+  assistant: ""
+openchat:
+  id: openchat
+  name: OpenChat
+  user: "GPT4 User: {prompt}<|end_of_turn|>"
+  assistant: "GPT4 Assistant:"
+  stop:
+    - "<|end_of_turn|>"
+openchat-correct:
+  id: openchat-correct
+  name: OpenChat correct
+  user: "GPT4 Correct User: {prompt}<|end_of_turn|>"
+  assistant: "GPT4 Correct Assistant:"
+  stop:
+    - "<|end_of_turn|>"
+orca:
+  id: orca
+  name: Orca
+  system:
+    schema: |-
+      ### System:
+      {system}
+    message: "You are an AI assistant that follows instruction extremely well. Help as much as you can."
+  user: |-
+    ### User:
+    {prompt}
+  assistant: "### Response:"
+  linebreaks:
+    system: 2
+    user: 2
+phi3:
+  id: phi3
+  name: Phi 3
+  user: "<|user|> {prompt}<|end|>"
+  assistant: "<|assistant|>"
+  system:
+    schema: "<|system|> {system}<|end|>"
+  afterShot: "<|end|>\n"
+  stop:
+    - "<|end|>"
+    - "<|user|>"
+phi4:
+  id: phi4
+  name: Phi 4
+  system:
+    schema: "<|im_start|>system<|im_sep|>{system}<|im_end|>"
+  user: "<|im_start|>user<|im_sep|>{prompt}<|im_end|>"
+  assistant: "<|im_start|>assistant<|im_sep|>"
+  stop:
+    - "<|im_end|>"
+    - "<|im_sep|>"
+  afterShot: "<|im_end|>\n"
+phi4-tools:
+  id: phi4-tools
+  name: Phi 4 tools
+  system:
+    schema: "<|im_start|>system<|im_sep|>{system}<|im_end|>"
+    message: |-
+      You are a helpful assistant with some tools.
+      <|tool|>
+      {tools}
+      <|/tool|>
+  user: "<|im_start|>user<|im_sep|>{prompt}<|im_end|>"
+  assistant: "<|im_start|>assistant<|im_sep|>"
+  stop:
+    - "<|im_end|>"
+    - "<|im_sep|>"
+  afterShot: "<|im_end|>\n"
+  tools:
+    def: "{system}"
+    call: |-
+      <|tool_call|>
+      {tools}
+      <|/tool_call|>
+    response: |- 
+      <|im_start|>user
+      <|tool_response|>
+      {tools_response}
+      <|/tool_response|><|im_end|>
+reka:
+  id: reka
+  name: Reka
+  user: "human: {prompt} <sep> "
+  assistant: "assistant:"
+  stop:
+    - "<sep>"
+    - "<|endoftext|>"
+  afterShot: " <sep> "
+vicuna:
+  id: vicuna
+  name: Vicuna
+  user: "USER: {prompt}"
+  assistant: "### ASSISTANT:"
+  linebreaks:
+    user: 2
+vicuna_system:
+  id: vicuna_system
+  name: Vicuna system
+  system:
+    schema: "SYSTEM: {system}"
+  user: "USER: {prompt}"
+  assistant: "### ASSISTANT:"
+  linebreaks:
+    system: 2
+    user: 2
+wizard_vicuna:
+  id: wizard_vicuna
+  name: Wizard Vicuna
+  user: |-
+    ### Human:
+    {prompt}
+  assistant: "### ASSISTANT:"
+  linebreaks:
+    user: 2
+  stop:
+    - "<|endoftext|>"
+wizardlm:
+  id: wizardlm
+  name: WizardLM
+  system:
+    schema: "{system}"
+    message: "You are a helpful AI assistant."
+  user: "USER: {prompt}"
+  assistant: "ASSISTANT:"
+  linebreaks:
+    user: 1
+zephyr:
+  id: zephyr
+  name: Zephyr
+  system:
+    schema: |-
+      <|system|>
+      {system}<|endoftext|>
+  user: |-
+    <|user|>
+    {prompt}<|endoftext|>
+  assistant: "<|assistant|>"
+  linebreaks:
+    system: 1
+    user: 1
+    assistant: 1
+  afterShot: "\n"
+  stop:
+    - "<|endoftext|>"
+-- codegen/go.mod --
+module codegen
+
+go 1.22.1
+
+require gopkg.in/yaml.v3 v3.0.1 // indirect
+-- codegen/go.sum --
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+-- codegen/golang/gen.go --
+package golang
+
+func Gen(content string) string {
+	codeStart := `// Autogenerated code: do not edit
+
+package modprompt
+
+var templates = `
+	return codeStart + "`" + content + "`"
+}
+-- codegen/main.go --
+package main
+
+import (
+	"codegen/golang"
+	"codegen/ts"
+	"codegen/utils"
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+	"strings"
+
+	"gopkg.in/yaml.v3"
+)
+
+// Custom JSON encoder that does not escape HTML characters
+func customMarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
+	buf := &strings.Builder{}
+	enc := json.NewEncoder(buf)
+	enc.SetIndent(prefix, indent)
+	enc.SetEscapeHTML(false) // Disable HTML escaping
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	// Remove the trailing newline added by Encode
+	return []byte(strings.TrimSuffix(buf.String(), "\n")), nil
+}
+
+func main() {
+	p := "./db.yml"
+	//fmt.Println("Opening", p)
+	_, err := os.Stat(p)
+	if os.IsNotExist(err) {
+		log.Fatal("Db file not found")
+	}
+	file, err := os.Open(p)
+	if err != nil {
+		log.Fatal("Error opening db file")
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		log.Fatal("Error reading db file")
+	}
+	t := make(map[string]interface{})
+	err = yaml.Unmarshal([]byte(data), &t)
+	if err != nil {
+		log.Fatal("Error unmarshaling db file", err)
+	}
+
+	// Use customMarshalIndent to marshal and format the JSON
+	jsonData, err := customMarshalIndent(t, "", "  ")
+	if err != nil {
+		log.Fatal("Error marshaling to JSON", err)
+	}
+
+	// Print the JSON data
+	content := string(jsonData)
+
+	tsData := ts.Gen(content)
+	utils.Write("../src/db.ts", tsData)
+	//fmt.Println(tsData)
+
+	goData := golang.Gen(content)
+	utils.Write("./db.go", goData)
+	//fmt.Println(goData)
+}
+-- codegen/ts/gen.go --
+package ts
+
+func Gen(content string) string {
+	codeStart := `// Autogenerated code: do not edit
+
+import { LmTemplate } from "./interfaces.js";
+
+const templates: Record<string, LmTemplate> = `
+	codeEnd := `;
+
+export { templates }`
+	return codeStart + content + codeEnd
+}
+-- codegen/utils/files.go --
+package utils
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+)
+
+func Write(fn, code string) {
+	fn, err := filepath.Abs(fn)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	file, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o755)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	n, err := file.Write([]byte(code))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Printf("[codegen] File: %s (%d bytes)"+"\n", fn, n)
+}
+-- docsite/.nojekyll --
+-- examples/clone.js --
+#!/usr/bin/env node
+
+import { templates, PromptTemplate } from "../dist/main.js";
+
+console.log("Available templates:", Object.keys(templates));
+// load template
+const tpl = new PromptTemplate(templates.alpaca)
+  .afterSystem("You are a javascript specialist")
+  .afterAssistant(" (answer in valid json)")
+  .replacePrompt("fix this invalid json:\n\n```json\n{prompt}\n```")
+  .addShot(
+    "{'a':1,}",
+    '\n\n```json\n{"a":1}\n```\n',
+  );
+
+
+// render the template
+console.log(tpl.render());
+
+// clone
+console.log("Cloning the template to Chatml format:\n\n");
+const ntpl = tpl.cloneTo("chatml");
+console.log(ntpl.render())
+-- examples/long_shot.js --
+#!/usr/bin/env node
+
+import { PromptTemplate } from "../dist/main.js";
+
+const baseprompt = `in Python create a detailed and helpful Numpy style \
+docstrings for this code:
+
+\`\`\`python
+{prompt}
+\`\`\`
+
+Important: always provide an example at the end of the docstring. Use a maximum \
+line length of 88 characters. Output only the docstring.`;
+
+const shotUser = `def add(a: float, b: float) -> float:
+  return a + b`;
+const shotAssistant = `\n\`\`\`python
+"""Sum two numbers.
+
+Parameters
+----------
+a : \`float\`
+    The first number to add.
+b : \`float\`
+  The second number to add.
+
+Returns
+-------
+sum : \`float\`
+    The sum of \`\`a\`\` and \`\`b\`\`.
+
+Example
+-------
+>>> add(5, 5)
+10
+"""
+\`\`\``;
+
+const template = new PromptTemplate("alpaca")
+  .replaceSystem("You are a Python expert")
+  .replacePrompt(baseprompt)
+  .addShot(baseprompt.replace("{prompt}", shotUser), shotAssistant);
+const prompt = `class Dog:
+  kingdom = "Animalia"
+  species = "Canis lupus"
+  name: str
+  age: int
+
+  def __init__(self, name: str, age: int):
+      self.name = name
+      self.age = age`;
+
+console.log("--------------------------");
+console.log("       Alpaca");
+console.log("--------------------------");
+console.log(template.render());
+
+console.log("--------------------------");
+console.log("       Mistral");
+console.log("--------------------------");
+const tpl1 = template.cloneTo("mistral");
+console.log(tpl1.render())
+
+console.log("--------------------------");
+console.log("       ChatMl");
+console.log("--------------------------");
+const tpl = template.cloneTo("chatml");
+console.log(tpl.render())
+-- examples/one_shot.js --
+#!/usr/bin/env node
+
+//import { templates, PromptTemplate } from "modprompt";
+import { templates, PromptTemplate } from "../dist/main.js";
+
+//console.log("Available templates:", Object.keys(templates));
+const _prompt = "fix this invalid json:\n\n```json\n{prompt}\n```";
+// load template
+const tpl = new PromptTemplate(templates.granite)
+  .afterSystem(" You are a javascript specialist")
+  .afterAssistant("```json")
+  .replacePrompt(_prompt)
+  .addShot(
+    _prompt.replace("{prompt}", "{'a':1,}"),
+    '\n{"a":1}\n```',
+  );
+
+// render the template
+console.log(tpl.render())
+-- examples/package.json --
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "Modprompt examples",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@locallm/api": "^0.2.1",
+    "modprompt": "^0.10.11"
+  }
+}
+-- examples/simple.js --
+#!/usr/bin/env node
+
+import { templates, PromptTemplate } from "../dist/main.js";
+
+console.log("Available templates:", Object.keys(templates));
+// load template
+//const tpl = new PromptTemplate(templates.alpaca)
+const tpl = new PromptTemplate(templates.chatml);
+// render the template
+console.log(`'${tpl.render()}'`)
+-- examples/tools.js --
+#!/usr/bin/env node
+import { Lm } from "@locallm/api";
+import { PromptTemplate } from "../dist/main.js";
+
+// Run an Ollama instance with one of these models:
+
+//const model = { name: "granite3.3:2b", template: "granite-tools" };
+//const model = { name: "qwen3:0.6b", template: "chatml-tools" };
+//const model = { name: "qwen3:1.7b", template: "chatml-tools" };
+const model = { name: "qwen3:4b", template: "chatml-tools" };
+//const model = { name: "qwen3:8b", template: "chatml-tools" };
+//const model = { name: "mistral-small3.1:24b", template: "mistral-system-tools" };
+
+//const prompt = "What is the current weather in London?";
+const prompt = `I am landing in Barcelona soon: I plan to reach my hotel and then go for outdoor sport. 
+How are the conditions in the city?`;
+
+function get_current_weather(args) {
+    console.log("=> Running the get_current_weather tool with args", args);
+    return { "temperature": 24, "weather": "sunny" }
+}
+
+function get_current_traffic(args) {
+    console.log("Running the get_current_traffic tool with args", args);
+    return { "trafic": "heavy" }
+}
+
+const tools = {
+    get_current_weather: {
+        "name": "get_current_weather",
+        "description": "Get the current weather",
+        "arguments": {
+            "location": {
+                "description": "The city and state, e.g. San Francisco, CA"
+            }
+        },
+        execute: (args) => get_current_weather(args)
+    },
+    get_current_traffic: {
+        "name": "get_current_traffic",
+        "description": "Get the current road traffic conditions",
+        "arguments": {
+            "location": {
+                "description": "The city and state, e.g. San Francisco, CA"
+            }
+        },
+        "execute": get_current_traffic,
+    }
+};
+
+async function main() {
+    const template = new PromptTemplate(model.template)
+        .addTool(tools.get_current_weather)
+        .addTool(tools.get_current_traffic);
+    const lm = new Lm({
+        providerType: "ollama",
+        serverUrl: "http://localhost:11434",
+        onToken: (t) => process.stdout.write(t),
+    });
+    process.on('SIGINT', () => {
+        lm.abort().then(() => process.exit());
+    });
+    await lm.loadModel(model.name, 4096);
+    console.log("Loaded model", lm.model);
+    const _prompt = template.prompt(prompt);
+    console.log("\n----------- Turn 1 prompt:");
+    console.log(_prompt);
+    const res = await lm.infer(_prompt, {
+        stream: true,
+        temperature: 0.1,
+        max_tokens: 2048,
+        extra: {
+            raw: true
+        }
+    });
+    const { isToolCall, toolsCall, error } = template.processAnswer(res.text);
+    if (error) {
+        throw new Error(`Error processing tool call answer:\n, ${answer}`);
+    }
+    if (!isToolCall) {
+        return
+    }
+    const toolsUsed = {};
+    toolsCall.forEach((tc) => {
+        console.log("\n> Executing tool call:", tc);
+        const tresp = tools[tc.name].execute(tc.arguments);
+        toolsUsed[tc.name] = {
+            call: tc,
+            response: tresp,
+        };
+        console.log("> Tool response", tresp);
+    });
+
+    //console.log("\nProcessed answer", isToolCall, toolsCall, error);
+    //return
+    template.pushToHistory({
+        user: prompt,
+        assistant: res.text,
+        tools: toolsUsed,
+    });
+    console.log("\n----------- Turn 2 prompt:");
+    const _nextPrompt = template.render();
+    console.log(_nextPrompt);
+    console.log("------------\n");
+    const res2 = await lm.infer(_nextPrompt, {
+        stream: true,
+        temperature: 0.1,
+        max_tokens: 1024,
+        extra: {
+            raw: true
+        }
+    });
+    template.pushToHistory({
+        user: prompt,
+        assistant: res2.text,
+    });
+    //console.log(res2);
+    console.log("\n----------- Template history:");
+    console.log(JSON.stringify(template.history, null, "  "));
+    console.log()
+}
+
+(async () => {
+    await main();
+})();
+
+-- jest.config.ts --
+import type { Config } from '@jest/types';
+// Sync object
+const config: Config.InitialOptions = {
+  verbose: true,
+  preset: 'ts-jest/presets/default-esm', // or other ESM presets
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+  transform: {
+    // '^.+\\.[tj]sx?$' to process js/ts with `ts-jest`
+    // '^.+\\.m?[tj]sx?$' to process js/ts/mjs/mts with `ts-jest`
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
+  },
+};
+export default config;
+-- package.json --
+{
+  "name": "modprompt",
+  "version": "0.11.2",
+  "description": "Prompt templates for language models",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist/* && rollup -c",
+    "test": "jest --coverage",
+    "docs": "typedoc --entryPointStrategy expand"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/expect": "^24.3.2",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.15.3",
+    "jest": "^29.7.0",
+    "rollup": "^4.40.1",
+    "ts-jest": "^29.3.2",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
+    "typedoc": "^0.28.3",
+    "typedoc-plugin-markdown": "^4.6.3",
+    "typedoc-plugin-rename-defaults": "^0.7.3",
+    "typescript": "^5.8.3"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/main.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
+-- rollup.config.mjs --
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
+import terser from '@rollup/plugin-terser';
+
+//const isProduction = !process.env.ROLLUP_WATCH;
+
+export default {
+  input: 'src/main.ts',
+  output: [
+    {
+      file: 'dist/main.js',
+      format: 'esm'
+    },
+    {
+      file: 'dist/main.min.js',
+      format: 'iife',
+      name: '$tpl',
+      plugins: [terser()]
+    }],
+  plugins: [
+    typescript(),
+    resolve({
+      jsnext: true,
+      main: true,
+      browser: true,
+    }),
+  ],
+};
+-- src/cls.ts --
+import { LmTemplate, PromptBlock, HistoryTurn, SpacingSlots, LmToolsDef, ToolSpec, ToolCallSpec, ToolTurn, LmTags } from "./interfaces.js";
+import { templates } from "./db.js";
+import { extractBetweenTags, extractToolSpec } from "./utils.js";
+
+/**
+ * Represents a modified language model template.
+ * 
+ * @example
+ * const tpl = new PromptTemplate('alpaca');
+ */
+class PromptTemplate {
+  id: string;
+  name: string;
+  user: string;
+  assistant: string;
+  history: Array<HistoryTurn> = [];
+  toolsDef: LmToolsDef | null = null;
+  tools: Array<ToolSpec> = [];
+  tags: LmTags = {};
+  system?: PromptBlock;
+  shots?: Array<HistoryTurn>;
+  stop?: Array<string>;
+  linebreaks?: SpacingSlots;
+  afterShot?: string;
+  prefix?: string;
+  // internal state
+  private _extraSystem = "";
+  private _extraAssistant = "";
+  private _replacePrompt = "";
+  private _replaceSystem = "";
+  private _toolCallStart: string = "";
+  private _toolCallEnd: string | null = null;
+
+  /**
+   * Constructs a new `PromptTemplate` instance.
+   * 
+   * @param template - Either the name of the template to load or an instance of `LmTemplate`.
+   * 
+   * @example
+   * const tpl = new PromptTemplate('alpaca');
+   */
+  constructor(template: string | LmTemplate) {
+    let tpl: LmTemplate
+    if (typeof template == "string") {
+      tpl = this._load(template);
+    } else {
+      tpl = template;
+    }
+    this.id = tpl.id;
+    this.name = tpl.name;
+    this.user = tpl.user;
+    this.assistant = tpl.assistant;
+    this.system = tpl?.system;
+    this.shots = tpl?.shots;
+    this.stop = tpl?.stop;
+    this.linebreaks = tpl?.linebreaks;
+    this.afterShot = tpl?.afterShot;
+    this.prefix = tpl?.prefix;
+    if (tpl?.tags) {
+      this.tags = tpl?.tags;
+    }
+    if (tpl?.tools) {
+      this.toolsDef = tpl.tools;
+      const toolCallStartEnd = this.toolsDef?.call.split("{tools}");
+      if (!toolCallStartEnd) {
+        throw new Error(`Tool definition malformed in template ${this.name}`)
+      }
+      if (toolCallStartEnd.length == 0) {
+        throw new Error(`Tool definition malformed in template ${this.name}: no start tool call definition`)
+      }
+      this._toolCallStart = toolCallStartEnd[0];
+      if (toolCallStartEnd.length > 1) {
+        this._toolCallEnd = toolCallStartEnd[1]
+      }
+    }
+  }
+
+  get hasTools(): boolean {
+    return this.tools.length > 0
+  }
+
+  addTool(tool: ToolSpec): PromptTemplate {
+    if (!this?.toolsDef) {
+      throw new Error("This template does not support tools");
+    }
+    this.tools.push(tool);
+    return this;
+  }
+
+  processAnswer(answer: string): { isToolCall: boolean; toolsCall: Array<Record<string, any>>; error?: string } {
+    if (!this.hasTools) {
+      return { isToolCall: false, toolsCall: [] };
+    }
+    let isToolCall = false;
+    let toolsCall = new Array<Record<string, any>>();
+    const ans = answer.trim();
+    //console.log("\nTC ANSWER", ans);
+    //console.log("TC SW", this._toolCallStart, ans.startsWith(this._toolCallStart));
+    if (ans.includes(this._toolCallStart)) {
+      isToolCall = true;
+      const tc = this._parseToolCallString(answer);
+      //console.log("TCS", tc);
+      let errMsg = "";
+      try {
+        //const tc = JSON.parse(tcs);
+        if (!Array.isArray(tc)) {
+          throw new Error(`error parsing tool call response from model: the response object is not an Array:\n${tc}`);
+        }
+        //console.log("TC", tc)
+        toolsCall = tc;
+      } catch (e) {
+        throw new Error(`error parsing tool call response from model:\n${answer}`);
+      }
+      if (errMsg) {
+        return { isToolCall: false, toolsCall: [], error: errMsg };
+      }
+    }
+    //console.log("FTC", isToolCall, toolsCall);
+    return { isToolCall: isToolCall, toolsCall: toolsCall };
+  }
+
+  encodeToolResponse(response: any): string {
+    if (!this.toolsDef) {
+      throw new Error("can not encode tool response: the template has no tools definition")
+    }
+    const resp = typeof response == "string" ? response : `${response}`;
+    return this.toolsDef.response.replace("{tools_response}", resp)
+  }
+
+  /**
+   * Clones the current `PromptTemplate` instance to a new instance of `PromptTemplate`.
+   *
+   * This function creates a new `PromptTemplate` instance with the same state as the current instance.
+   * It is useful when you want to work with a copy of the current template without modifying the original one.
+   *
+   * @param {string | LmTemplate} template - The id or template instance of the new `PromptTemplate` to make
+   * @param {boolean} keepShots - Keep the shots for the template instance: this will also clone the shots 
+   * @returns {PromptTemplate} - A new `PromptTemplate` instance with the same state as the current one.
+   *
+   * @example
+   * const tpl = new PromptTemplate('alpaca');
+   * const clonedTpl = tpl.cloneTo('chatml');
+   * console.log(clonedTpl);
+   */
+  cloneTo(template: string | LmTemplate, keepShots: boolean = true): PromptTemplate {
+    const tpl = new PromptTemplate(template);
+    if (keepShots) {
+      if (this?.shots) {
+        this.shots.forEach((s) => {
+          tpl.addShot(s.user, s.assistant)
+        })
+      }
+    }
+    if (this._extraSystem.length > 0) {
+      tpl.afterSystem(this._extraSystem)
+    }
+    if (this._replaceSystem.length > 0) {
+      tpl.replaceSystem(this._replaceSystem)
+    }
+    if (this._extraAssistant.length > 0) {
+      tpl.afterAssistant(this._extraAssistant)
+    }
+    if (this._replacePrompt.length > 0) {
+      tpl.replacePrompt(this._replacePrompt)
+    }
+    return tpl
+  }
+
+  /**
+* Converts the current `PromptTemplate` instance to a JSON object.
+*
+* This function serializes the current state of the `PromptTemplate` instance into a JSON object,
+* which can be used for storing the template or transmitting it over a network.
+*
+* @returns {LmTemplate} - A JSON object representing the current state of the `PromptTemplate`.
+*
+* @example
+* const tpl = new PromptTemplate('alpaca');
+* const json = tpl.toJson();
+* console.log(json);
+*/
+  toJson(): LmTemplate {
+    const res: LmTemplate = {
+      id: this.id,
+      name: this.name,
+      user: this.user,
+      assistant: this.assistant,
+    }
+    if (this?.prefix) {
+      res.prefix = this.prefix
+    }
+    if (this?.system) {
+      res.system = this.system
+    }
+    if (this?.shots) {
+      res.shots = this.shots
+    }
+    if (this?.afterShot) {
+      res.afterShot = this.afterShot
+    }
+    if (this?.stop) {
+      res.stop = this.stop
+    }
+    if (this?.linebreaks) {
+      res.linebreaks = this.linebreaks
+    }
+    return res
+  }
+
+  /**
+   * Replaces the system block with a given message.
+   * 
+   * @param msg - The message to replace the system block with.
+   * @returns A reference to the current `PromptTemplate` instance for chaining.
+   * 
+   * @example
+   * tpl.replaceSystem('You are a javascript expert');
+   */
+  replaceSystem(msg: string): PromptTemplate {
+    if (!this.system) {
+      return this
+    }
+    this._replaceSystem = msg;
+    return this
+  }
+
+  /**
+   * Appends a given message after the system message.
+   * 
+   * @param msg - The message to append.
+   * @returns A reference to the current `PromptTemplate` instance for chaining.
+   * 
+   * @example
+   * tpl.afterSystem('You are a javascript expert');
+   */
+  afterSystem(msg: string): PromptTemplate {
+    if (!this.system) {
+      return this
+    }
+    this._extraSystem = msg;
+    return this
+  }
+
+  /**
+   * Appends a given message after the assistant prompt token.
+   * 
+   * @param msg - The message to append.
+   * @returns A reference to the current `PromptTemplate` instance for chaining.
+   * 
+   * @example
+   * tpl.afterAssistant('( answer in json )');
+   */
+  afterAssistant(msg: string): PromptTemplate {
+    this._extraAssistant = msg;
+    return this
+  }
+
+  /**
+   * Replaces the `{prompt}` placeholder in the user message with a given message.
+   * 
+   * @param msg - The message to replace the placeholder with.
+   * @returns A reference to the current `PromptTemplate` instance for chaining.
+   * 
+   * @example
+   * tpl.replacePrompt(fix this invalid json:\n\n```json\n{prompt}\n```);
+   */
+  replacePrompt(msg: string): PromptTemplate {
+    this._replacePrompt = msg;
+    return this
+  }
+
+  /**
+   * Adds a new shot (a user-assistant interaction) to the template.
+   * 
+   * @param user - The user's message.
+   * @param assistant - The assistant's response.
+   * @returns A reference to the current `PromptTemplate` instance for chaining.
+   * 
+   * @example
+   * tpl.addShot('Is it raining?', 'No, it is sunny.');
+   */
+  addShot(user: string, assistant: string, tools?: Record<string, ToolTurn>): PromptTemplate {
+    if (tools && !this.toolsDef) {
+      throw new Error("This template does not support tools");
+    }
+    if (!this.shots) { this.shots = [] };
+    this.shots.push({ user, assistant, tools });
+    return this;
+  }
+
+  /**
+   * Adds multiple shots (user-assistant interactions) to the template.
+   *
+   * This function allows you to add multiple turns to the conversation. Each turn is represented by an object
+   * with a 'user' property (the user's message) and an 'assistant' property (the assistant's response).
+   *
+   * @param {Array<HistoryTurn>} shots - An array of objects, where each object represents a user-assistant interaction.
+   * @returns {PromptTemplate} - A reference to the current `PromptTemplate` instance for chaining.
+   *
+   * @example
+   * const tpl = new PromptTemplate('alpaca');
+   * tpl.addShots([
+   *   { user: 'What is the weather like?', assistant: 'It is sunny today!' },
+   *   { user: 'What is the weather like tomorrow?', assistant: 'I am sorry, but I can\'t predict the future.' }
+   * ]);
+   */
+  addShots(shots: Array<HistoryTurn>): PromptTemplate {
+    shots.forEach((s) => this.addShot(s.user, s.assistant));
+    return this
+  }
+
+  /**
+   * Render a turn block
+   *
+   * @param {HistoryTurn} shot the shot to render
+   * @returns {string} ther rendered text
+   */
+  renderShot(shot: HistoryTurn): string {
+    const buf = [];
+    //console.log("S user", shot.user);
+    buf.push(this._buildUserBlock(shot.user));
+    //console.log("BS user", this._buildUserBlock(shot.user))
+    let _assistantMsg = shot.assistant;
+    if (this.afterShot) {
+      _assistantMsg += this.afterShot
+    } /*else {
+      _assistantMsg += "\n\n"
+    }*/
+    buf.push(this._buildAssistantBlock(_assistantMsg));
+    if (shot?.tools) {
+      buf.push(this._buildToolsResponse(shot.tools));
+    }
+    return buf.join("")
+  }
+
+  /**
+   * Renders the template into a string representation.
+   * 
+   * @returns The rendered template as a string.
+   * 
+   * @example
+   * const rendered = tpl.render();
+   * console.log(rendered);
+   */
+  render(skip_empty_system: boolean = true): string {
+    const buf = new Array<string>();
+    // prefix
+    if (this.prefix) {
+      buf.push(this.prefix)
+    }
+    const hasSystemTools = this?.toolsDef?.def == "{system}";
+    // system prompt if any
+    const _systemBlock = this._buildSystemBlock(skip_empty_system, hasSystemTools);
+    if (_systemBlock.length > 0) {
+      buf.push(_systemBlock);
+      if (this?.linebreaks?.system) {
+        buf.push("\n".repeat(this.linebreaks.system))
+      }
+    }
+    // tools if any
+    if (this.toolsDef && !hasSystemTools) {
+      const _toolsBlock = this._buildToolsBlock();
+      if (_toolsBlock.length > 0) {
+        buf.push(_toolsBlock);
+        if (this?.linebreaks?.tools) {
+          buf.push("\n".repeat(this.linebreaks.tools))
+        }
+      }
+    }
+    // shots if any
+    if (this?.shots) {
+      for (const shot of this.shots) {
+        buf.push(this.renderShot(shot));
+      }
+    }
+    // history
+    let isToolResponse = false;
+    if (this.history.length > 0) {
+      for (const turn of this.history) {
+        buf.push(this.renderShot(turn));
+      }
+      if (this.history[this.history.length - 1]?.tools) {
+        isToolResponse = true
+      }
+    }
+    if (!isToolResponse) {
+      // user block
+      buf.push(this._buildUserBlock());
+      // assistant block      
+    }
+    buf.push(this._buildAssistantBlock());
+    //console.log(buf)
+    return buf.join("");
+  }
+
+  /**
+  * Renders the template with the provided message replacing the `{prompt}` placeholder.
+  * 
+  * @param msg - The message to use for replacing the `{prompt}` placeholder.
+  * @returns The rendered template with the provided message.
+  * 
+  * @example
+  * const prompted = tpl.prompt("list the planets in the solar system");
+  * console.log(prompted);
+  */
+  prompt(msg: string, skip_empty_system: boolean = true): string {
+    return this.render(skip_empty_system).replace("{prompt}", msg)
+  }
+
+  /**
+   * Push a turn into history
+   *
+   * @param {HistoryTurn} turn the history turn
+   * @returns {PromptTemplate}
+   */
+  pushToHistory(turn: HistoryTurn, extractThinking = true): PromptTemplate {
+    if (extractThinking) {
+      if (this.tags?.endThink && this.tags?.think) {
+        const tks = turn.assistant.split(this.tags.endThink);
+        if (tks.length > 1) {
+          turn.think = extractBetweenTags(turn.assistant, this.tags.think, this.tags.endThink);
+          turn.assistant = tks[1]
+        }
+      }
+    }
+    this.history.push(turn)
+    return this
+  }
+
+  private _buildSystemBlock(skip_empty_system: boolean, systemTools = false): string {
+    let res = "";
+    if (!this?.system) {
+      return ""
+    }
+    if (this._replaceSystem.length > 0) {
+      this.system.message = this._replaceSystem;
+    }
+    //console.log("SYS MSG", this.system?.message);
+    if (this.system?.message) {
+      if (this._extraSystem.length > 0) {
+        this.system.message = this.system.message + this._extraSystem
+      }
+      //console.log("ES M", this.s);
+      res = this.system.schema.replace("{system}", this.system.message);
+    } else {
+      //console.log("NO SYS MSG");
+      if (this._extraSystem.length > 0) {
+        //console.log("EXTRA SYS", this._extraSystem);
+        //console.log("SYS SCHEMA", this.system.schema);
+        res = this.system.schema.replace("{system}", this._extraSystem);
+        //console.log("TMP SYS RES", res);
+      }
+    }
+    //console.log("SYS RES", res);
+    if (res == "") {
+      if (!skip_empty_system) {
+        res = this.system.schema;
+      }
+    }
+    if (systemTools && this.tools.length > 0) {
+      res = res.replace("{tools}", this._buildToolsBlock(true))
+    }
+    return res
+  }
+
+  private _buildToolsResponse(toolTurns: Record<string, ToolTurn>): string {
+    if (!this.toolsDef) {
+      throw new Error("No tools def in template to build tool response");
+    }
+    const buf = new Array<string>();
+    for (const v of Object.values(toolTurns)) {
+      buf.push(this.toolsDef.response.replace("{tools_response}", JSON.stringify(v.response)));
+    }
+    return buf.join("");
+  }
+
+  private _buildToolsBlock(raw = false): string {
+    if (!this.toolsDef) {
+      throw new Error(`Can not build tools block: no tools definition found in template`)
+    }
+    let toolsBlock = "";
+    if (this.tools.length == 0) {
+      return ""
+    }
+    const _t = JSON.stringify(this.tools);
+    if (raw) {
+      return _t
+    }
+    toolsBlock += this.toolsDef.def.replace("{tools}", _t);
+    /*console.log("TB-------");
+    console.log(toolsBlock);
+    console.log("END------------")*/
+    return toolsBlock
+  }
+
+  private _buildUserBlock(msg?: string): string {
+    let buf = [];
+    // prompt replacement
+    let _userBlock = this.user;
+    if (this._replacePrompt.length > 0) {
+      _userBlock = _userBlock.replace("{prompt}", this._replacePrompt)
+    }
+    buf.push(_userBlock);
+    if (this?.linebreaks?.user) {
+      buf.push("\n".repeat(this.linebreaks.user))
+    }
+    if (msg) {
+      // this is a shot
+      //buf[0] = _userBlock.replace("{prompt}", msg);
+      buf[0] = this.user.replace("{prompt}", msg);
+    }
+    return buf.join("")
+  }
+
+  private _buildAssistantBlock(msg?: string): string {
+    let txt = "";
+    let amsg = this.assistant;
+    if (this?.linebreaks?.assistant) {
+      amsg += "\n".repeat(this.linebreaks.assistant)
+    }
+    if (this._extraAssistant.length > 0) {
+      amsg += this._extraAssistant
+    }
+    txt += amsg;
+    if (msg) {
+      // this is a shot
+      txt += msg
+    }
+    return txt
+  }
+
+  private _load(name: string): LmTemplate {
+    try {
+      if (name in templates) {
+        //console.log("Loading", name)
+        return templates[name];
+      } else {
+        throw new Error(`Template ${name} not found`)
+      }
+    } catch (err) {
+      throw new Error(`Error loading template ${name}: ${err}`)
+    }
+  }
+
+  private _parseToolCallString(raw: string): Array<ToolCallSpec> {
+    return extractToolSpec(raw, this._toolCallStart, this._toolCallEnd ?? undefined)
+  }
+}
+
+export { PromptTemplate }
+-- src/db.ts --
+// Autogenerated code: do not edit
+
+import { LmTemplate } from "./interfaces.js";
+
+const templates: Record<string, LmTemplate> = {
+  "alpaca": {
+    "assistant": "### Response:",
+    "id": "alpaca",
+    "linebreaks": {
+      "system": 2,
+      "user": 2
+    },
+    "name": "Alpaca",
+    "system": {
+      "message": "Below is an instruction that describes a task. Write a response that appropriately completes the request.",
+      "schema": "{system}"
+    },
+    "user": "### Instruction:\n{prompt}"
+  },
+  "chatml": {
+    "afterShot": "<|im_end|>\n",
+    "assistant": "<|im_start|>assistant",
+    "id": "chatml",
+    "linebreaks": {
+      "assistant": 1,
+      "system": 1,
+      "user": 1
+    },
+    "name": "ChatMl",
+    "stop": [
+      "<|im_end|>"
+    ],
+    "system": {
+      "schema": "<|im_start|>system\n{system}<|im_end|>"
+    },
+    "tags": {
+      "endThink": "</think>",
+      "think": "<think>"
+    },
+    "user": "<|im_start|>user\n{prompt}<|im_end|>"
+  },
+  "chatml-tools": {
+    "afterShot": "<|im_end|>",
+    "assistant": "<|im_start|>assistant",
+    "id": "chatml-tools",
+    "linebreaks": {
+      "assistant": 1,
+      "system": 1,
+      "user": 1
+    },
+    "name": "ChatMl tools",
+    "stop": [
+      "<|im_end|>"
+    ],
+    "system": {
+      "message": "You are a helpful assistant with tool calling capabilities. You may call one or more functions to assist with the user query.\nYou are provided with function signatures within <tools></tools> XML tags:\n<tools>\n{tools}\n</tools>\n\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n[{\"name\": <function-name>, \"arguments\": <args-json-object>}]\n</tool_call>",
+      "schema": "<|im_start|>system\n{system}<|im_end|>"
+    },
+    "tags": {
+      "endThink": "</think>",
+      "think": "<think>"
+    },
+    "tools": {
+      "call": "<tool_call>\n{tools}\n</tool_call>",
+      "def": "{system}",
+      "response": "<|im_start|>user\n<tool_response>\n{tools_response}\n</tool_response><|im_end|>"
+    },
+    "user": "<|im_start|>user\n{prompt}<|im_end|>"
+  },
+  "codestral": {
+    "afterShot": "\n",
+    "assistant": " [/INST]",
+    "id": "codestral",
+    "linebreaks": {
+      "system": 2
+    },
+    "name": "Codestral",
+    "stop": [
+      "</s>"
+    ],
+    "system": {
+      "schema": "<<SYS>>\n{system}\n<</SYS>>"
+    },
+    "user": "[INST] {prompt}"
+  },
+  "command-r": {
+    "assistant": "<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>",
+    "id": "command-r",
+    "linebreaks": {
+      "user": 1
+    },
+    "name": "Command-R",
+    "prefix": "<BOS_TOKEN>",
+    "stop": [
+      "<|END_OF_TURN_TOKEN|>"
+    ],
+    "system": {
+      "schema": "<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|>{system}<|END_OF_TURN_TOKEN|>"
+    },
+    "user": "<|START_OF_TURN_TOKEN|><|USER_TOKEN|>{prompt}<|END_OF_TURN_TOKEN|>"
+  },
+  "deephermes": {
+    "afterShot": "<|eot_id|>\n\n",
+    "assistant": "<|start_header_id|>assistant<|end_header_id|>",
+    "id": "deephermes",
+    "name": "Deephermes",
+    "stop": [
+      "<|eot_id|>",
+      "<|end_of_text|>"
+    ],
+    "system": {
+      "message": "You are a function calling AI model. You are provided with function signatures within <tools></tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions. Here are the available tools: <tools> {tools} </tools>. For each function call return a json object with function name and arguments within <tool_call></tool_call> XML tags as follows:\n<tool_call>\n[{\"arguments\": <args-dict>, \"name\": <function-name>}]\n</tool_call>",
+      "schema": "<|start_header_id|>system<|end_header_id|>\n\n{system}<|eot_id|>"
+    },
+    "tools": {
+      "call": "<tool_call>\n{tools}\n</tool_call>",
+      "def": "{system}",
+      "response": "<|start_header_id|>user<|end_header_id|>\n<tool_response>\n{tools_response}\n</tool_response><|eot_id|>"
+    },
+    "user": "<|start_header_id|>user<|end_header_id|>\n{prompt}<|eot_id|>"
+  },
+  "deepseek": {
+    "afterShot": "\n",
+    "assistant": "### Response:",
+    "id": "deepseek",
+    "linebreaks": {
+      "system": 1,
+      "user": 1
+    },
+    "name": "Deepseek",
+    "stop": [
+      "<|EOT|>",
+      "### Instruction:"
+    ],
+    "system": {
+      "message": "You are an AI programming assistant, utilizing the DeepSeek Coder model, developed by DeepSeek Company, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.",
+      "schema": "{system}"
+    },
+    "user": "### Instruction:\n{prompt}"
+  },
+  "deepseek2": {
+    "assistant": "Assistant:",
+    "id": "deepseek2",
+    "linebreaks": {
+      "system": 2,
+      "user": 2
+    },
+    "name": "Deepseek 2",
+    "stop": [
+      "<｜end▁of▁sentence｜>",
+      "<｜tool▁calls▁end｜>"
+    ],
+    "system": {
+      "schema": "<｜begin▁of▁sentence｜>{system}"
+    },
+    "user": "User: {prompt}"
+  },
+  "deepseek3": {
+    "afterShot": "<｜end▁of▁sentence｜>",
+    "assistant": "<｜Assistant｜>",
+    "id": "deepseek3",
+    "linebreaks": {
+      "system": 2,
+      "user": 2
+    },
+    "name": "Deepseek 3",
+    "stop": [
+      "<｜end▁of▁sentence｜>",
+      "<｜tool▁calls▁end｜>"
+    ],
+    "system": {
+      "schema": "<｜begin▁of▁sentence｜>{system}"
+    },
+    "user": "<｜User｜>{prompt}"
+  },
+  "exaone": {
+    "afterShot": "[|endofturn|]",
+    "assistant": "[|assistant|]",
+    "id": "exaone",
+    "linebreaks": {
+      "system": 1,
+      "user": 1
+    },
+    "name": "Exaone",
+    "stop": [
+      "[|endofturn|]"
+    ],
+    "system": {
+      "message": "You are EXAONE model from LG AI Research, a helpful assistant.",
+      "schema": "[|system|]{system}[|endofturn|]"
+    },
+    "user": "[|user|]{prompt}[|endofturn|]"
+  },
+  "gemma": {
+    "afterShot": "<end_of_turn>",
+    "assistant": "<start_of_turn>model",
+    "id": "gemma",
+    "name": "Gemma",
+    "stop": [
+      "<end_of_turn>"
+    ],
+    "user": "<start_of_turn>user\n{prompt}\n <end_of_turn>\n "
+  },
+  "granite": {
+    "afterShot": "<|end_of_text|>\n",
+    "assistant": "<|start_of_role|>assistant<|end_of_role|>",
+    "id": "granite",
+    "linebreaks": {
+      "system": 1,
+      "user": 1
+    },
+    "name": "Granite",
+    "stop": [
+      "<|end_of_text|>",
+      "<|start_of_role|>"
+    ],
+    "system": {
+      "message": "You are Granite, developed by IBM. You are a helpful AI assistant.",
+      "schema": "<|start_of_role|>system<|end_of_role|>{system}<|end_of_text|>"
+    },
+    "user": "<|start_of_role|>user<|end_of_role|>{prompt}<|end_of_text|>"
+  },
+  "granite-think": {
+    "afterShot": "<|end_of_text|>\n",
+    "assistant": "<|start_of_role|>assistant<|end_of_role|>",
+    "id": "granite-think",
+    "linebreaks": {
+      "system": 1,
+      "user": 1
+    },
+    "name": "Granite think",
+    "stop": [
+      "<|end_of_text|>",
+      "<|start_of_role|>"
+    ],
+    "system": {
+      "message": "You are Granite, developed by IBM. You are a helpful AI assistant. Respond to every user query in a comprehensive and detailed way. You can write down your thoughts and reasoning process before responding. In the thought process, engage in a comprehensive cycle of analysis, summarization, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. In the response section, based on various attempts, explorations, and reflections from the thoughts section, systematically present the final solution that you deem correct. The response should summarize the thought process. Write your thoughts after 'Here is my thought process:' and write your response after 'Here is my response:' for each user query.",
+      "schema": "<|start_of_role|>system<|end_of_role|>{system}<|end_of_text|>"
+    },
+    "user": "<|start_of_role|>user<|end_of_role|>{prompt}<|end_of_text|>"
+  },
+  "granite-tools": {
+    "afterShot": "<|end_of_text|>\n",
+    "assistant": "<|start_of_role|>assistant<|end_of_role|>",
+    "id": "granite-tools",
+    "linebreaks": {
+      "system": 1,
+      "tools": 1,
+      "user": 1
+    },
+    "name": "Granite tools",
+    "stop": [
+      "<|end_of_text|>",
+      "<|start_of_role|>"
+    ],
+    "system": {
+      "message": "You are Granite, developed by IBM. You are a helpful AI assistant with access to the following tools. When a tool is required to answer the user's query, respond with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request.",
+      "schema": "<|start_of_role|>system<|end_of_role|>{system}<|end_of_text|>"
+    },
+    "tools": {
+      "call": "<|tool_call|>{tools}",
+      "def": "<|start_of_role|>tools<|end_of_role|>{tools}<|end_of_text|>",
+      "response": "<|start_of_role|>tool_response<|end_of_role|>{tools_response}<|end_of_text|>\n"
+    },
+    "user": "<|start_of_role|>user<|end_of_role|>{prompt}<|end_of_text|>"
+  },
+  "llama": {
+    "assistant": " [/INST] ",
+    "id": "llama",
+    "linebreaks": {
+      "system": 2,
+      "user": 0
+    },
+    "name": "Llama",
+    "prefix": "<s>",
+    "stop": [
+      "</s>"
+    ],
+    "system": {
+      "message": "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible\n\nIf a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.",
+      "schema": "[INST] <<SYS>>\n{system}\n<</SYS>>"
+    },
+    "user": "{prompt}"
+  },
+  "llama3": {
+    "afterShot": "<|eot_id|>\n\n",
+    "assistant": "<|start_header_id|>assistant<|end_header_id|>",
+    "id": "llama3",
+    "name": "Llama 3",
+    "stop": [
+      "<|eot_id|>",
+      "<|end_of_text|>"
+    ],
+    "system": {
+      "schema": "<|start_header_id|>system<|end_header_id|>\n\n{system}<|eot_id|>"
+    },
+    "user": "<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+  },
+  "llama3-think": {
+    "afterShot": "<|eot_id|>\n\n",
+    "assistant": "<|start_header_id|>assistant<|end_header_id|>",
+    "id": "llama3-think",
+    "name": "Llama 3 think",
+    "stop": [
+      "<|eot_id|>",
+      "<|end_of_text|>"
+    ],
+    "system": {
+      "message": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",
+      "schema": "<|start_header_id|>system<|end_header_id|>\n\n{system}<|eot_id|>"
+    },
+    "user": "<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|>"
+  },
+  "llava": {
+    "assistant": "ASSISTANT:",
+    "id": "llava",
+    "linebreaks": {
+      "user": 1
+    },
+    "name": "Llava",
+    "user": "USER: {prompt}"
+  },
+  "minichat": {
+    "afterShot": "\n",
+    "assistant": "[|Assistant|]",
+    "id": "minichat",
+    "name": "Minichat",
+    "prefix": "<s> ",
+    "stop": [
+      "</s>",
+      "[|User|]"
+    ],
+    "user": "[|User|] {prompt} </s>"
+  },
+  "mistral": {
+    "afterShot": "\n",
+    "assistant": " [/INST]",
+    "id": "mistral",
+    "name": "Mistral",
+    "stop": [
+      "</s>"
+    ],
+    "user": "[INST] {prompt}"
+  },
+  "mistral-system": {
+    "afterShot": "\n",
+    "assistant": " [/INST]",
+    "id": "mistral-system",
+    "name": "Mistral system",
+    "stop": [
+      "</s>"
+    ],
+    "system": {
+      "schema": "[SYSTEM_PROMPT]{system}[/SYSTEM_PROMPT] "
+    },
+    "user": "[INST] {prompt}"
+  },
+  "mistral-system-tools": {
+    "afterShot": "\n",
+    "assistant": "",
+    "id": "mistral-system-tools",
+    "name": "Mistral system tools",
+    "stop": [
+      "</s>"
+    ],
+    "system": {
+      "schema": "[SYSTEM_PROMPT]{system}[/SYSTEM_PROMPT] "
+    },
+    "tools": {
+      "call": "[TOOL_CALLS]{tools}",
+      "def": "[AVAILABLE_TOOLS]{tools}[/AVAILABLE_TOOLS]",
+      "response": "[TOOL_RESULTS]{tools_response}[/TOOL_RESULTS]"
+    },
+    "user": "[INST] {prompt} [/INST]"
+  },
+  "nemotron": {
+    "afterShot": "\n\n",
+    "assistant": "<extra_id_1>Assistant\n",
+    "id": "nemotron",
+    "linebreaks": {
+      "system": 2,
+      "user": 1
+    },
+    "name": "Nemotron",
+    "system": {
+      "schema": "<extra_id_0>System\n{system}"
+    },
+    "user": "<extra_id_1>User\n{prompt}"
+  },
+  "none": {
+    "assistant": "",
+    "id": "none",
+    "name": "No template",
+    "user": "{prompt}"
+  },
+  "openchat": {
+    "assistant": "GPT4 Assistant:",
+    "id": "openchat",
+    "name": "OpenChat",
+    "stop": [
+      "<|end_of_turn|>"
+    ],
+    "user": "GPT4 User: {prompt}<|end_of_turn|>"
+  },
+  "openchat-correct": {
+    "assistant": "GPT4 Correct Assistant:",
+    "id": "openchat-correct",
+    "name": "OpenChat correct",
+    "stop": [
+      "<|end_of_turn|>"
+    ],
+    "user": "GPT4 Correct User: {prompt}<|end_of_turn|>"
+  },
+  "orca": {
+    "assistant": "### Response:",
+    "id": "orca",
+    "linebreaks": {
+      "system": 2,
+      "user": 2
+    },
+    "name": "Orca",
+    "system": {
+      "message": "You are an AI assistant that follows instruction extremely well. Help as much as you can.",
+      "schema": "### System:\n{system}"
+    },
+    "user": "### User:\n{prompt}"
+  },
+  "phi3": {
+    "afterShot": "<|end|>\n",
+    "assistant": "<|assistant|>",
+    "id": "phi3",
+    "name": "Phi 3",
+    "stop": [
+      "<|end|>",
+      "<|user|>"
+    ],
+    "system": {
+      "schema": "<|system|> {system}<|end|>"
+    },
+    "user": "<|user|> {prompt}<|end|>"
+  },
+  "phi4": {
+    "afterShot": "<|im_end|>\n",
+    "assistant": "<|im_start|>assistant<|im_sep|>",
+    "id": "phi4",
+    "name": "Phi 4",
+    "stop": [
+      "<|im_end|>",
+      "<|im_sep|>"
+    ],
+    "system": {
+      "schema": "<|im_start|>system<|im_sep|>{system}<|im_end|>"
+    },
+    "user": "<|im_start|>user<|im_sep|>{prompt}<|im_end|>"
+  },
+  "phi4-tools": {
+    "afterShot": "<|im_end|>\n",
+    "assistant": "<|im_start|>assistant<|im_sep|>",
+    "id": "phi4-tools",
+    "name": "Phi 4 tools",
+    "stop": [
+      "<|im_end|>",
+      "<|im_sep|>"
+    ],
+    "system": {
+      "message": "You are a helpful assistant with some tools.\n<|tool|>\n{tools}\n<|/tool|>",
+      "schema": "<|im_start|>system<|im_sep|>{system}<|im_end|>"
+    },
+    "tools": {
+      "call": "<|tool_call|>\n{tools}\n<|/tool_call|>",
+      "def": "{system}",
+      "response": "<|im_start|>user\n<|tool_response|>\n{tools_response}\n<|/tool_response|><|im_end|>"
+    },
+    "user": "<|im_start|>user<|im_sep|>{prompt}<|im_end|>"
+  },
+  "reka": {
+    "afterShot": " <sep> ",
+    "assistant": "assistant:",
+    "id": "reka",
+    "name": "Reka",
+    "stop": [
+      "<sep>",
+      "<|endoftext|>"
+    ],
+    "user": "human: {prompt} <sep> "
+  },
+  "vicuna": {
+    "assistant": "### ASSISTANT:",
+    "id": "vicuna",
+    "linebreaks": {
+      "user": 2
+    },
+    "name": "Vicuna",
+    "user": "USER: {prompt}"
+  },
+  "vicuna_system": {
+    "assistant": "### ASSISTANT:",
+    "id": "vicuna_system",
+    "linebreaks": {
+      "system": 2,
+      "user": 2
+    },
+    "name": "Vicuna system",
+    "system": {
+      "schema": "SYSTEM: {system}"
+    },
+    "user": "USER: {prompt}"
+  },
+  "wizard_vicuna": {
+    "assistant": "### ASSISTANT:",
+    "id": "wizard_vicuna",
+    "linebreaks": {
+      "user": 2
+    },
+    "name": "Wizard Vicuna",
+    "stop": [
+      "<|endoftext|>"
+    ],
+    "user": "### Human:\n{prompt}"
+  },
+  "wizardlm": {
+    "assistant": "ASSISTANT:",
+    "id": "wizardlm",
+    "linebreaks": {
+      "user": 1
+    },
+    "name": "WizardLM",
+    "system": {
+      "message": "You are a helpful AI assistant.",
+      "schema": "{system}"
+    },
+    "user": "USER: {prompt}"
+  },
+  "zephyr": {
+    "afterShot": "\n",
+    "assistant": "<|assistant|>",
+    "id": "zephyr",
+    "linebreaks": {
+      "assistant": 1,
+      "system": 1,
+      "user": 1
+    },
+    "name": "Zephyr",
+    "stop": [
+      "<|endoftext|>"
+    ],
+    "system": {
+      "schema": "<|system|>\n{system}<|endoftext|>"
+    },
+    "user": "<|user|>\n{prompt}<|endoftext|>"
+  }
+};
+
+export { templates }
+-- src/interfaces.ts --
+
+/**
+ * @file Defines interfaces for managing conversation structures, templates, and tools.
+ * Imports: None.
+ * @example
+ * import { LmTemplate, HistoryTurn } from './conversation';
+ * const template: LmTemplate = {
+ *   id: "alapaca",
+ *   name: "Alpaca",
+ *   system: {
+ *     schema: "{system}",
+ *     message: "Below is an instruction that describes a task. Write a response that appropriately completes the request.",
+ *   },
+ *   user: "### Instruction:\n{prompt}",
+ *   assistant: "### Response:",
+ *   linebreaks: {
+ *     system: 2,
+ *     user: 2,
+ *   },
+ *   tools: {
+ *     def: "Tool definition",
+ *     call: "Tool call format",
+ *     response: "Expected tool response"
+ *   }
+ * };
+ * const historyTurn: HistoryTurn = {
+ *   user: 'What's the weather like?',
+ *   assistant: 'It's sunny today!',
+ *   images: [{ id: 1, data: 'base64image' }]
+ * };
+ */
+
+/**
+ * Defines the spacing (in terms of line breaks) to be applied between different parts of the conversation.
+ *
+ * @interface SpacingSlots
+ * @typedef {SpacingSlots}
+ * 
+ * @example
+ * const spacingExample: SpacingSlots = {
+ *   system: 2,
+ *   user: 1,
+ *   assistant: 1,
+ *   tools: 0
+ * };
+ */
+interface SpacingSlots {
+  /**
+   * Number of line breaks to be applied after the system message.
+   */
+  system?: number;
+
+  /**
+   * Number of line breaks to be applied after the user message.
+   */
+  user?: number;
+
+  /**
+   * Number of line breaks to be applied after the assistant message.
+   */
+  assistant?: number;
+
+  /**
+   * Number of line breaks to be applied after tool messages.
+   */
+  tools?: number;
+}
+
+/**
+ * Represents a block of system-level prompts or instructions in the conversation.
+ * 
+ * @interface PromptBlock
+ * @typedef {PromptBlock}
+ * 
+ * @example
+ * const promptExample: PromptBlock = {
+ *   schema: '### System: {system}',
+ *   message: 'Some system message'
+ * };
+ */
+interface PromptBlock {
+  /**
+   * The schema or format for the system message.
+   * 
+   * Can include placeholders like `{system}` which can be programmatically replaced with actual messages later.
+   */
+  schema: string;
+
+  /**
+   * Optional default message content for the system. 
+   * 
+   * Used if a dynamic value isn't provided for `{system}` placeholder.
+   */
+  message?: string;
+}
+
+/**
+ * Definition of language model tools.
+ *
+ * @interface LmToolsDef
+ * @typedef {LmToolsDef}
+ * 
+ * @example
+ * const toolDefExample: LmToolsDef = {
+ *   def: "Tool definition",
+ *   call: "Tool call format",
+ *   response: "Expected tool response"
+ * };
+ */
+interface LmToolsDef {
+  /**
+   * The definition or description of the tool.
+   */
+  def: string;
+
+  /**
+   * The call format for the tool.
+   */
+  call: string;
+
+  /**
+   * The expected response format from the tool.
+   */
+  response: string;
+}
+
+interface LmTags {
+  think?: string;
+  endThink?: string;
+}
+
+/**
+ * Represents a template for language modeling, detailing the structure and interaction elements of a conversation.
+ * 
+ * @interface LmTemplate
+ * @typedef {LmTemplate}
+ * 
+ * @example
+ * const sampleTemplate: LmTemplate = {
+ *  id: "alapaca",
+ *  name: "Alpaca",
+ *  system: {
+ *    schema: "{system}",
+ *    message: "Below is an instruction that describes a task. Write a response that appropriately completes the request.",
+ *  },
+ *  user: "### Instruction:\n{prompt}",
+ *  assistant: "### Response:",
+ *   linebreaks: {
+ *     system: 2,
+ *     user: 2,
+ *   },
+ *   tools: {
+ *     def: "Tool definition",
+ *     call: "Tool call format",
+ *     response: "Expected tool response"
+ *   }
+ * };
+ */
+interface LmTemplate {
+  /**
+   * The id slug of the template.
+   */
+  id: string;
+
+  /**
+   * The name of the template.
+   */
+  name: string;
+
+  /**
+   * The default message template for the user.
+   * 
+   * Includes a `{prompt}` placeholder which can be programmatically replaced later.
+   */
+  user: string;
+
+  /**
+   * The default message template for the assistant.
+   */
+  assistant: string;
+
+  /**
+   * Optional prompt block that represents system-level messages or instructions.
+   */
+  system?: PromptBlock;
+
+  /**
+   * Optional array of turn blocks representing back-and-forths between the user and the assistant.
+   * 
+   * Useful for simulating multi-turn interactions.
+   */
+  shots?: Array<HistoryTurn>;
+
+  /**
+   * Tool definitions for the template.
+   */
+  tools?: LmToolsDef;
+
+  /**
+   * Optional array of strings that signal the end of a conversation.
+   * 
+   * These strings can be used to detect when a conversation should be terminated.
+   */
+  stop?: Array<string>;
+
+  /**
+   * Optional specifications for line breaks between different message types.
+   * 
+   * This can be used to format the rendered conversation.
+   */
+  linebreaks?: SpacingSlots;
+
+  /**
+   * String to display after a shot
+   */
+  afterShot?: string;
+
+  /**
+   * A prefix like a bos token to insert before content
+   */
+  prefix?: string;
+
+  tags?: LmTags;
+}
+
+/**
+ * Image data associated with a message or response.
+ *
+ * @interface ImgData
+ * @typedef {ImgData}
+ * 
+ * @example
+ * const imgExample: ImgData = {
+ *   id: 1,
+ *   data: 'base64image'
+ * };
+ */
+interface ImgData {
+  /**
+   * Unique identifier for the image.
+   */
+  id: number;
+
+  /**
+   * Base64 encoded image data.
+   */
+  data: string;
+}
+
+interface ToolTurn {
+  call: ToolCallSpec;
+  response: Array<Record<string, any>>;
+}
+
+/**
+ * Represents a turn in the conversation history, including user and assistant messages, optional tool usage, and associated images.
+ *
+ * @interface HistoryTurn
+ * @typedef {HistoryTurn}
+ * 
+ * @example
+ * const historyTurnExample: HistoryTurn = {
+ *   user: 'What's the weather like?',
+ *   assistant: 'It's sunny today!',
+ *   images: [{ id: 1, data: 'base64image' }]
+ * };
+ */
+interface HistoryTurn {
+  /**
+   * The message content from the user.
+   */
+  user: string;
+
+  /**
+   * The final response from the assistant.
+   */
+  assistant: string;
+
+  /**
+   * Optional thinking tag content
+   */
+  think?: string;
+
+  /**
+   * Optional tools usage in the turn.
+   */
+  tools?: Record<string, ToolTurn>;
+
+  /**
+   * Array of images associated with the turn.
+   */
+  images?: Array<ImgData>;
+}
+
+interface ToolCallSpec {
+  name?: string;
+  arguments?: {
+    [key: string]: string;
+  };
+}
+
+/**
+ * Specification for a tool that can be used within the conversation.
+ *
+ * @interface ToolSpec
+ * @typedef {ToolSpec}
+ * 
+ * @example
+ * const toolSpecExample: ToolSpec = {
+ *   name: "WeatherFetcher",
+ *   description: "Fetches weather information.",
+ *   arguments: {
+ *     location: {
+ *       description: "The location for which to fetch the weather."
+ *     }
+ *   }
+ * };
+ */
+interface ToolSpec {
+  /**
+   * The name of the tool.
+   */
+  name: string;
+
+  /**
+   * A description of what the tool does.
+   */
+  description: string;
+
+  /**
+   * Arguments required by the tool, with descriptions for each argument.
+   */
+  arguments: {
+    [key: string]: {
+      description: string;
+    };
+  };
+}
+
+export {
+  SpacingSlots,
+  PromptBlock,
+  LmTemplate,
+  HistoryTurn,
+  ImgData,
+  LmToolsDef,
+  ToolSpec,
+  ToolCallSpec,
+  ToolTurn,
+  LmTags,
+}
+-- src/main.ts --
+import { templates } from "./db.js";
+import { PromptTemplate } from "./cls.js";
+import { SpacingSlots, PromptBlock, LmTemplate, ImgData, HistoryTurn, ToolSpec } from "./interfaces.js";
+
+export { templates, PromptTemplate, SpacingSlots, PromptBlock, LmTemplate, ImgData, HistoryTurn, ToolSpec };
+-- src/utils.ts --
+import { ToolCallSpec } from "./interfaces.js";
+
+function extractBetweenTags(
+  text: string,
+  startTag: string,
+  endTag?: string
+): string {
+  try {
+    // Find start position
+    const startIndex = text.indexOf(startTag);
+    if (startIndex === -1) return text;
+
+    // Calculate content boundaries
+    let contentStart = startIndex + startTag.length;
+    let contentEnd: number;
+
+    if (endTag) {
+      contentEnd = text.indexOf(endTag, contentStart);
+      if (contentEnd === -1) return text;
+    } else {
+      // Find next newline for self-closing tags
+      contentEnd = text.indexOf('\n', contentStart);
+      if (contentEnd === -1) contentEnd = text.length;
+    }
+
+    // Extract content
+    return text.substring(contentStart, contentEnd).trim();
+  } catch (error) {
+    throw new Error(`Error parsing content between tags ${startTag} ${endTag}: ${error}`);
+  }
+}
+
+function extractToolSpec(
+  text: string,
+  startTag: string,
+  endTag?: string
+): ToolCallSpec[] {
+  try {
+    // Extract content
+    const content = extractBetweenTags(text, startTag, endTag)
+
+    // Parse JSON content
+    let parsed = JSON.parse(content);
+    if (!Array.isArray(parsed)) {
+      parsed = [parsed]
+    }
+    return parsed;
+
+  } catch (error) {
+    throw new Error(`Error parsing tool response content: ${error}`);
+  }
+}
+
+export { extractBetweenTags, extractToolSpec }
+-- test/test.ts --
+
+import { templates, PromptTemplate, TurnBlock } from "../src/main";
+
+describe('templates', () => {
+  it('base', async () => {
+    const tpl = new PromptTemplate(templates.alpaca);
+    expect(tpl.name).toBe("Alpaca");
+    expect(tpl.user).toBe("### Instruction:\n{prompt}");
+    expect(tpl.assistant).toBe("### Response:");
+  });
+
+  it('system', async () => {
+    const tpl = new PromptTemplate(templates.alpaca);
+    expect(tpl.system?.schema).toBe("{system}");
+    const sysMsg = "Below is an instruction that describes a task. Write a response that appropriately completes the request.";
+    expect(tpl.system?.message).toBe(sysMsg);
+    tpl.afterSystem("AFTER");
+    expect(tpl.render()).toContain(sysMsg + "AFTER");
+    tpl.replaceSystem("NEW SYS");
+    const txt = tpl.render();
+    expect(txt).not.toContain(sysMsg);
+    expect(txt.startsWith("NEW SYS")).toBeTruthy();
+  });
+
+  it('shots', async () => {
+    const tpl = new PromptTemplate(templates.vicuna);
+    tpl.addShot("2+2", "4");
+    /*const txt = `USER:
+2+2
+
+### ASSISTANT:
+4
+
+USER:
+{prompt}
+
+### ASSISTANT:
+`;
+    expect(tpl.render()).toBe(txt);*/
+    const ntpl = tpl.cloneTo("mistral");
+    const newtxt = `[INST] 2+2 [/INST]4
+[INST] {prompt} [/INST]`;
+    expect(ntpl.render()).toBe(newtxt);
+  });
+
+  it('toJson', async () => {
+    const tpl = new PromptTemplate(templates.alpaca);
+    const json = tpl.toJson();
+    expect(json.id).toBe("alpaca");
+    expect(json.name).toBe("Alpaca");
+    expect(json.user).toBe("### Instruction:\n{prompt}");
+    expect(json.assistant).toBe("### Response:");
+  });
+
+  it('prompt', async () => {
+    const tpl = new PromptTemplate(templates.mistral);
+    const prompted = tpl.prompt("list the planets in the solar system");
+    expect(prompted).toBe("[INST] list the planets in the solar system [/INST]");
+  });
+
+  it('pushToHistory', async () => {
+    const tpl = new PromptTemplate(templates.alpaca);
+    tpl.pushToHistory({ user: "What's the weather like?", assistant: "It's sunny today!" });
+    expect(tpl.history).toEqual([
+      { user: "What's the weather like?", assistant: "It's sunny today!" }
+    ]);
+  });
+
+  it('renderShot', async () => {
+    const tpl = new PromptTemplate(templates.alpaca);
+    const shot: TurnBlock = { user: "What's the weather like?", assistant: "It's sunny today!" };
+    const rendered = tpl.renderShot(shot);
+    expect(rendered).toContain("### Instruction:\nWhat's the weather like?\n\n### Response:It's sunny today!");
+  });
+
+  /*it('render with different scenarios', async () => {
+    const tpl = new PromptTemplate(templates.mistral);
+    tpl.afterAssistant("( answer in json )");
+    tpl.addShot("2+2", "4");
+    tpl.replacePrompt("fix this invalid json:\n\n```json\n{prompt}\n```");
+    const rendered = tpl.render();
+    expect(rendered).toContain("fix this invalid json:\n\n```json\n2+2\n```");
+    expect(rendered).toContain("4\n\n( answer in json )");
+  });*/
+});
+-- tsconfig.json --
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "sourceMap": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist",
+    "allowJs": true,
+    "removeComments": false,
+    "strictFunctionTypes": true,
+    "lib": [
+      "ESNext",
+      "dom"
+    ],
+    "types": [
+      "node",
+      "jest"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "*": [
+        "src/*",
+        "node_modules/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "test/**/*.spec.ts",
+    "test/test.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
+  ],
+  "typedocOptions": {
+    "name": "Modprompt documentation",
+    "readme": "none",
+    "entryPoints": [
+      "src/interfaces.ts",
+      "src/cls.ts",
+      "src/db.ts",
+    ],
+    "out": "docsite/dist/apidoc",
+  }
+}
+{{end}}
+

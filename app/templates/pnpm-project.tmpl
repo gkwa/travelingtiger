@@ -1,0 +1,9 @@
+{{define "pnpm-project"}}
+{{template "common-apps" . }}
+
+## create justfile
+{{template "justfile" . }}
+
+## use pnpm
+{{template "pnpm" . }}
+{{end}}
