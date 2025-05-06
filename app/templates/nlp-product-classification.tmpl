@@ -1,0 +1,123 @@
+{{define "prompt"}}
+I am learning how NLP works and as a project I need to classify many products into different categories.
+
+For example I have a collection of 200 products that I need to classify as Worcestershire sauce or not Worcestershire.
+
+I know we can dive in to creating a robust script that will get us close to 100% accuracy on whether my 200 products are detected properly.  I'm not interested in that along though.
+
+We will have to identify many products....Worcestershire is just one of many examples.
+
+Suppose we want to identify if any of the products are Mayaninase instead.
+
+I realize we can create a python script that again--will get us close to 100% accuracy.  I realize this is not too difficult.  I'm not intersted in doing that now.
+
+I'm interested in one level above this: how to manage all of these scripts and workflows.
+
+Creating 100s of scripts to identify hundreds of products seems very tedious and before I get started doing that I want to know what the industry standard for making this a less tiresome task is.
+
+For example for each of these product categories I have about 200 product listings in the same json format but again in each of the groups of 200 products, some match the category and some dont.
+
+- hamburger buns
+- ho fun noodles
+- worcestershire sauce
+- kasoori methi
+- lettuce
+- makrut lime leaves
+- onion powder
+- peanuts
+- pecans
+- peeled frozen shrimp
+- peeled shrimp
+- plate gripper
+- pot gripper
+- pure cane granulated sugar
+- raisins
+- rice crackers
+
+I think the way to handle this is to use logistical regression as a binary classification problem for each group, but its unfeasable to write a new python script for each catetory since I have 100s of categories.
+
+Here is the shape of my data in `<data_sample/>` xml element.
+
+```
+<data_sample>{{template "data-sample" .}}</data_sample>
+```
+
+This data sample is just a few from worcestershire group.  I also have data in the same shape for the raisins group and the rice crackers group etc.
+{{end}}
+
+{{define "system-prompt"}}
+You are an AI assistant tasked with mentoring new computer science students taking an  introductory NLP course.
+
+You are being asked a question about what NLP tools will be necessary to solve a particular NLP problem.
+{{end}}
+
+{{define "data-sample"}}
+[
+    {
+        "id": "383b4cc1-05b4-4dd7-a3da-7135e90f3da9",
+        "name": "Worcestershire Sauce 10oz Market Pantry (Pack of 6)",
+        "category": "worcestershire sauce",
+        "domain": "www.walmart.com",
+        "entityType": "category",
+        "url": "https://www.walmart.com/ip/Worcestershire-Sauce-10oz-Market-Pantry-Pack-of-6/15475209537",
+        "imageUrl": "https://i5.walmartimages.com/seo/Worcestershire-Sauce-10oz-Market-Pantry-Pack-of-6_5649a6c2-22f7-4851-be11-222c3645617a.27868c87f76edfef9934fdc2bfe8d6cc.jpeg?odnHeight=580&odnWidth=580&odnBg=FFFFFF",
+        "price": "$32.$",
+        "originalPrice": true,
+        "shipping": "Shipping, arrives in 3+ days",
+        "isSponsored": false,
+        "timestamp": "2025-04-30#www.walmart.com#Worcestershire Sauce 10oz Market Pantry (Pack of 6)",
+        "ttl": "1748646882",
+        "rawTextContent": "Worcestershire Sauce 10 oz Market Pantry ( Pack of 6 ) Worcestershire Sauce 10 oz Market Pantry ( Pack of 6 ) Add Now $ 32 11 current price Now $ 32.11 $ 37.61 Was $ 37.61 +$ 9.89 shipping Worcestershire Sauce 10 oz Market Pantry ( Pack of 6 ) Shipping , arrives in 3+ days",
+        "rawHtml": "<div role=\"group\" data-item-id=\"3AFPK13L22WN\" class=\"sans-serif mid-gray relative flex flex-column w-100 hide-child-opacity\"><a link-identifier=\"15475209537\" class=\"w-100 h-100 z-1 hide-sibling-opacity absolute\" target=\"\" href=\"https://www.walmart.com/ip/Worcestershire-Sauce-10oz-Market-Pantry-Pack-of-6/15475209537\"><span class=\"w_iUH7\">Worcestershire Sauce 10oz Market Pantry (Pack of 6) </span></a><div class=\"\" data-testid=\"list-view\"><div class=\"\"><div class=\"\"><div class=\"relative\"><div class=\"relative overflow-hidden\" style=\"max-width: 290px; height: 0px; padding-bottom: min(290px, 100%); align-self: center; width: min(290px, 100%);\"><button class=\"pa0 bn\" disabled=\"\" style=\"width: 32px; height: 32px; visibility: hidden;\">&nbsp;</button><img loading=\"lazy\" srcset=\"https://i5.walmartimages.com/seo/Worcestershire-Sauce-10oz-Market-Pantry-Pack-of-6_5649a6c2-22f7-4851-be11-222c3645617a.27868c87f76edfef9934fdc2bfe8d6cc.jpeg?odnHeight=290&amp;%3BodnWidth=290&amp;%3BodnBg=FFFFFF 1x, https://i5.walmartimages.com/seo/Worcestershire-Sauce-10oz-Market-Pantry-Pack-of-6_5649a6c2-22f7-4851-be11-222c3645617a.27868c87f76edfef9934fdc2bfe8d6cc.jpeg?odnHeight=580&amp;%3BodnWidth=580&amp;%3BodnBg=FFFFFF 2x\" src=\"https://i5.walmartimages.com/seo/Worcestershire-Sauce-10oz-Market-Pantry-Pack-of-6_5649a6c2-22f7-4851-be11-222c3645617a.27868c87f76edfef9934fdc2bfe8d6cc.jpeg?odnHeight=580&amp;%3BodnWidth=580&amp;%3BodnBg=FFFFFF\" id=\"is-0-productImage-11\" width=\"\" height=\"\" class=\"absolute top-0 left-0\" data-testid=\"productTileImage\" alt=\"Worcestershire Sauce 10oz Market Pantry (Pack of 6)\"></div><div class=\"z-2 relative mt3\"><div class=\"relative dib flex-row-reverse\" data-id=\"3AFPK13L22WN\"><button class=\"w_hhLG w_8nsR w_jDfj pointer bn sans-serif b ph2 flex items-center justify-center w-auto shadow-1\" type=\"button\" data-pcss-hide=\"true\" data-automation-id=\"add-to-cart\" aria-label=\"Add to cart - Worcestershire Sauce 10oz Market Pantry (Pack of 6)\"><i class=\"ld ld-Plus\" title=\"add to cart\" style=\"font-size: 1.5rem; vertical-align: -0.25em; width: 1.5rem; height: 1.5rem; box-sizing: content-box;\"></i><span class=\"mr2\">Add</span></button></div></div></div><div class=\"mt3\"></div></div><div class=\"\"><div><div data-automation-id=\"product-price\" class=\"flex flex-wrap justify-start items-center lh-title mb1\"><div class=\"mr1 mr2-xl b black green lh-solid f5 f4-l\" aria-hidden=\"true\"><span class=\"f3 mr1\">Now</span><span class=\"f6 f5-l\" style=\"vertical-align: 0.65ex; margin-right: 2px;\">$</span><span class=\"f2\">32</span><span class=\"f6 f5-l\" style=\"vertical-align: 0.75ex;\">11</span></div><span class=\"w_iUH7\">current price Now $32.11</span><div class=\"gray mr1 strike f6 f4-l flex items-end mt1\" aria-hidden=\"true\">$37.61</div><span class=\"w_iUH7\">Was $37.61</span><div class=\"gray f6 f5-l mt1\">+$9.89 shipping</div></div></div><span class=\"w_V_DM\" style=\"-webkit-line-clamp: 3; padding-bottom: 0.1em; margin-bottom: -0.1em;\"><span data-automation-id=\"product-title\" class=\"normal dark-gray mb0 mt1 lh-title f6 f5-l lh-copy\">Worcestershire Sauce 10oz Market Pantry (Pack of 6)</span></span><div></div><div class=\"mt2\" data-automation-id=\"fulfillment-badge\"><div class=\"f7 flex self-baseline dark-gray\"><div>Shipping, arrives <span class=\"b\">in 3+ days</span></div></div></div></div></div></div></div>"
+    },
+    {
+        "id": "bf67a463-89af-4ae5-bca5-b2e656129777",
+        "name": "WOODSTOCK Organic Mayo",
+        "category": "worcestershire sauce",
+        "domain": "delivery.pccmarkets.com",
+        "entityType": "category",
+        "url": "https://delivery.pccmarkets.com/store/pcc-community-markets/products/81693-woodstock-organic-mayo-11-oz",
+        "imageUrl": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF",
+        "price": "$3.79",
+        "originalPrice": null,
+        "shipping": null,
+        "isSponsored": null,
+        "timestamp": "2025-04-30#delivery.pccmarkets.com#WOODSTOCK Organic Mayo",
+        "ttl": "1748646906",
+        "rawTextContent": "HEADING : Current price : $ 3.79 $ 3 79 Original Price $ 5.99 WOODSTOCK Organic Mayo 11.25 fl oz Many in stock Add",
+        "rawHtml": "<div class=\"e-13udsys\"><div><h3 class=\"e-ti75j2\"><div aria-label=\"Product\" role=\"group\" class=\"e-fsno8i\"><a role=\"button\" href=\"https://delivery.pccmarkets.com/store/pcc-community-markets/products/81693-woodstock-organic-mayo-11-oz\" aria-disabled=\"false\" class=\"e-eevw7b\"><div class=\"e-bjn8wh\"><div class=\"e-19idom\"><div class=\"e-1m0du6a\"><div class=\"e-ec1gba\"><img srcset=\"https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_4028617e-2963-4961-bc42-1b9ae7748050.png,https://www.instacart.com/image-server/296x296/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_4028617e-2963-4961-bc42-1b9ae7748050.png 1.5x, https://www.instacart.com/image-server/394x394/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_4028617e-2963-4961-bc42-1b9ae7748050.png 2x, https://www.instacart.com/image-server/591x591/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_4028617e-2963-4961-bc42-1b9ae7748050.png 3x, https://www.instacart.com/image-server/788x788/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_4028617e-2963-4961-bc42-1b9ae7748050.png 4x\" data-testid=\"item-card-image\" alt=\"\" class=\"e-19e3dsf\"></div></div></div></div><div><div class=\"e-0\"><div class=\"e-m67vuy\"><div class=\"e-k008qs\"><div class=\"e-s71gfs\"><span class=\"screen-reader-only\" style=\"border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; width: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute;\">Current price: $3.79</span><span class=\"e-1ip314g\"><span aria-hidden=\"true\" class=\"e-p745l\">$</span><span aria-hidden=\"true\" class=\"e-1qkvt8e\">3</span><span aria-hidden=\"true\" class=\"e-p745l\">79</span></span></div><div class=\"e-1om9ohm\"><div class=\"e-1rr4qq7\"></div><div class=\"e-1rr4qq7\"><span style=\"border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; width: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute;\">Original Price</span><p class=\"e-vn9fl5\"><span class=\"e-azp9o7\">$5.99</span></p></div></div></div><div class=\"e-d3v9zr\"></div></div><div role=\"heading\" aria-level=\"4\" class=\"e-1pnf8tv\"><div class=\"e-147kl2c\">WOODSTOCK Organic Mayo</div></div><div class=\"e-zjik7\"><div title=\"11.25 fl oz\" class=\"e-an4oxa\">11.25 fl oz</div></div><div class=\"e-mpv0ou\"><div class=\"e-tcs88s\"><svg aria-hidden=\"true\" data-testid=\"inventory_high_icon_custom\" width=\"1em\" height=\"1em\" viewBox=\"0 0 24 24\" fill=\"C7C8CD\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"8\" y=\"16.5\" width=\"8\" height=\"3\" rx=\"1.5\" fill=\"green\" fill-opacity=\"0.7\"></rect><rect x=\"5.5\" y=\"10.5\" width=\"13\" height=\"3\" rx=\"1.5\" fill=\"green\" fill-opacity=\"0.8\"></rect><rect x=\"3\" y=\"4.5\" width=\"18\" height=\"3\" rx=\"1.5\" fill=\"green\"></rect></svg></div><div class=\"e-pftdsf\">Many in stock</div></div></div></div></a><section></section><div><div class=\"e-vp4qqz\"><div class=\"e-1bzm377\"><button aria-label=\"Add 1 item WOODSTOCK Organic Mayo\" class=\"e-1052v5y\"><div data-testid=\"addItemButtonExpandingAdd\"><div class=\"e-bjcmdk\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"#FFFFFF\" xmlns=\"http://www.w3.org/2000/svg\" size=\"24\" color=\"systemGrayscale00\" aria-hidden=\"true\"><path d=\"M10.88 13.12V20h2.24v-6.88H20v-2.24h-6.88V4h-2.24v6.88H4v2.24z\"></path></svg><span class=\"e-rtogbj\">Add</span></div></div></button></div></div></div></div></h3></div></div>"
+    },
+    {
+        "id": "94d82fb3-be84-40b8-88f8-0f3610060257",
+        "name": "Lea & Perrins Worcestershire Sauce 10 oz (Pack of 12)",
+        "category": "worcestershire sauce",
+        "domain": "www.walmart.com",
+        "entityType": "category",
+        "url": "https://www.walmart.com/ip/Lea-Perrins-Worcestershire-Sauce-10-oz-Pack-of-12/7788600125",
+        "imageUrl": "https://i5.walmartimages.com/seo/Lea-Perrins-Worcestershire-Sauce-10-oz-Pack-of-12_3c44dece-ad85-4421-9997-47e127bcc0a6.5c5e3193c8792409ce41db93df8d659b.jpeg?odnHeight=580&odnWidth=580&odnBg=FFFFFF",
+        "price": "$91.$",
+        "originalPrice": true,
+        "shipping": "Shipping, arrives in 3+ days",
+        "isSponsored": false,
+        "timestamp": "2025-04-30#www.walmart.com#Lea & Perrins Worcestershire Sauce 10 oz (Pack of 12)",
+        "ttl": "1748646882",
+        "rawTextContent": "Lea & Perrins Worcestershire Sauce 10 oz ( Pack of 12 ) Lea & Perrins Worcestershire Sauce 10 oz ( Pack of 12 ) Add $ 91 71 current price $ 91.71 +$ 34.31 shipping Lea & Perrins Worcestershire Sauce 10 oz ( Pack of 12 ) Shipping , arrives in 3+ days",
+        "rawHtml": "<div role=\"group\" data-item-id=\"4FCYF8TWP35S\" class=\"sans-serif mid-gray relative flex flex-column w-100 hide-child-opacity\"><a link-identifier=\"7788600125\" class=\"w-100 h-100 z-1 hide-sibling-opacity absolute\" target=\"\" href=\"https://www.walmart.com/ip/Lea-Perrins-Worcestershire-Sauce-10-oz-Pack-of-12/7788600125\"><span class=\"w_iUH7\">Lea &amp; Perrins Worcestershire Sauce 10 oz (Pack of 12) </span></a><div class=\"\" data-testid=\"list-view\"><div class=\"\"><div class=\"\"><div class=\"relative\"><div class=\"relative overflow-hidden\" style=\"max-width: 290px; height: 0px; padding-bottom: min(290px, 100%); align-self: center; width: min(290px, 100%);\"><button class=\"pa0 bn\" disabled=\"\" style=\"width: 32px; height: 32px; visibility: hidden;\">&nbsp;</button><img loading=\"lazy\" srcset=\"https://i5.walmartimages.com/seo/Lea-Perrins-Worcestershire-Sauce-10-oz-Pack-of-12_3c44dece-ad85-4421-9997-47e127bcc0a6.5c5e3193c8792409ce41db93df8d659b.jpeg?odnHeight=290&amp;%3BodnWidth=290&amp;%3BodnBg=FFFFFF 1x, https://i5.walmartimages.com/seo/Lea-Perrins-Worcestershire-Sauce-10-oz-Pack-of-12_3c44dece-ad85-4421-9997-47e127bcc0a6.5c5e3193c8792409ce41db93df8d659b.jpeg?odnHeight=580&amp;%3BodnWidth=580&amp;%3BodnBg=FFFFFF 2x\" src=\"https://i5.walmartimages.com/seo/Lea-Perrins-Worcestershire-Sauce-10-oz-Pack-of-12_3c44dece-ad85-4421-9997-47e127bcc0a6.5c5e3193c8792409ce41db93df8d659b.jpeg?odnHeight=580&amp;%3BodnWidth=580&amp;%3BodnBg=FFFFFF\" id=\"is-0-productImage-34\" width=\"\" height=\"\" class=\"absolute top-0 left-0\" data-testid=\"productTileImage\" alt=\"Lea &amp; Perrins Worcestershire Sauce 10 oz (Pack of 12)\"></div><div class=\"z-2 relative mt3\"><div class=\"relative dib flex-row-reverse\" data-id=\"4FCYF8TWP35S\"><button class=\"w_hhLG w_8nsR w_jDfj pointer bn sans-serif b ph2 flex items-center justify-center w-auto shadow-1\" type=\"button\" data-pcss-hide=\"true\" data-automation-id=\"add-to-cart\" aria-label=\"Add to cart - Lea &amp; Perrins Worcestershire Sauce 10 oz (Pack of 12)\"><i class=\"ld ld-Plus\" title=\"add to cart\" style=\"font-size: 1.5rem; vertical-align: -0.25em; width: 1.5rem; height: 1.5rem; box-sizing: content-box;\"></i><span class=\"mr2\">Add</span></button></div></div></div><div class=\"mt3\"></div></div><div class=\"\"><div><div data-automation-id=\"product-price\" class=\"flex flex-wrap justify-start items-center lh-title mb1\"><div class=\"mr1 mr2-xl b black lh-solid f5 f4-l\" aria-hidden=\"true\"><span class=\"f3\"></span><span class=\"f6 f5-l\" style=\"vertical-align: 0.65ex; margin-right: 2px;\">$</span><span class=\"f2\">91</span><span class=\"f6 f5-l\" style=\"vertical-align: 0.75ex;\">71</span></div><span class=\"w_iUH7\">current price $91.71</span><div class=\"gray f6 f5-l mt1\">+$34.31 shipping</div></div></div><span class=\"w_V_DM\" style=\"-webkit-line-clamp: 3; padding-bottom: 0.1em; margin-bottom: -0.1em;\"><span data-automation-id=\"product-title\" class=\"normal dark-gray mb0 mt1 lh-title f6 f5-l lh-copy\">Lea &amp; Perrins Worcestershire Sauce 10 oz (Pack of 12)</span></span><div></div><div class=\"mt2\" data-automation-id=\"fulfillment-badge\"><div class=\"f7 flex self-baseline dark-gray\"><div>Shipping, arrives <span class=\"b\">in 3+ days</span></div></div></div></div></div></div></div>"
+    }
+]
+{{end}}
+
+{{define "nlp-product-classification"}}
+{{template "system-prompt" .}}
+
+## efficiently communicate please
+{{template "no-preamble" .}}
+
+## response in txtar format
+{{template "txtar" .}}
+
+If you do write python examples please follow this guideline:
+{{template "python-imports-absolute" .}}
+
+{{template "prompt" .}}
+{{end}}
