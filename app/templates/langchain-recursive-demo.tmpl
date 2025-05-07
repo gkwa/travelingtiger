@@ -1,0 +1,45 @@
+{{define "project-scaffold"}}
+-- .python-version --
+3.12
+-- pyproject.toml --
+[project]
+name = "daringdingo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Taylor Monacelli", email = "taylormonacelli@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+daringdingo = "daringdingo:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+-- src/daringdingo/__init__.py --
+def main() -> None:
+    print("Hello from daringdingo!")
+{{end}}
+
+{{define "langchain-recursive-demo"}}
+LangChain Prompt Templates allow you to create and manage libraries of prompts.
+
+You can chian prompts together to make them reusable.
+
+Will you create an example of how we could use langchain to manage prompts?
+
+I'm specifically interested in how prompts can be reused by chaining together prompts.
+
+I've created a project scaffold within project_scaffold xml stanza
+
+{{template "python-package" .}}
+
+<project_scaffold>
+{{template "project-scaffold" .}}
+</project_scaffold>
+{{end}}
+
+
