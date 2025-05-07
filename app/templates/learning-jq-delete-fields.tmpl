@@ -1,0 +1,75 @@
+{{define "learning-jq-delete-fields"}}
+I want to learn how to use `jq` command more efficiently.
+
+My `data.json` is embedded in `<data/>` xml element.
+
+I want to generate the result within the `<result/>` xml element.
+```
+<result>{{template "result" .}}</result>
+```
+
+I can do that use this `jq` command:
+```
+{{template "jq_command" .}}
+```
+
+But instead of deleting fields I want to delete, I want to only list fields that I do want to keep.  There are far fewer fields that I want to keep than that I want to remove so it would be more efficient to only list the ones I want to keep.
+
+```
+<data>{{template "data" .}}</data>
+```
+{{end}}
+
+{{define "jq_command"}}
+jq data.json 'map(del( .rawHtml, .category, .url, .id, .entityType, .originalPrice, .shipping, .isSponsored, .timestamp, .ttl, .price, .imageUrl,.domain,.badge,.entity_type,.pricePerUnit))'
+{{end}}
+
+{{define "result"}}
+[
+  {
+    "name": "Annie's Certified Organic Dijon Mustard",
+    "rawTextContent": "HEADING : Organic Current price : $ 5.99 $ 5 99 Annie's Certified Organic Dijon Mustard 9 oz Many in stock Add"
+  },
+  {
+    "name": "Annie's Certified Organic Honey Mustard",
+    "rawTextContent": "HEADING : Organic Current price : $ 5.99 $ 5 99 Annie's Certified Organic Honey Mustard 9 oz Many in stock Add"
+  }
+]
+{{end}}
+
+{{define "data"}}
+[
+  {
+    "badge": true,
+    "category": "worcestershire sauce",
+    "domain": "delivery.pccmarkets.com",
+    "entity_type": "category",
+    "id": "8b590ed7-0fb4-4cd5-bdc0-6b83b3ca8d7f",
+    "imageUrl": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF",
+    "name": "Annie's Certified Organic Dijon Mustard",
+    "price": "$5.99",
+    "pricePerUnit": "N/A",
+    "rawTextContent": "HEADING : Organic Current price : $ 5.99 $ 5 99 Annie's Certified Organic Dijon Mustard 9 oz Many in stock Add",
+    "timestamp": "2025-04-30#delivery.pccmarkets.com#Annie's Certified Organic Dijon Mustard",
+    "ttl": "1748646906",
+    "url": "https://delivery.pccmarkets.com/store/pcc-community-markets/products/25292-annie-s-dijon-mustard-certified-organic-gluten-free-non-gmo-9-000-oz"
+  },
+  {
+    "badge": true,
+    "category": "worcestershire sauce",
+    "domain": "delivery.pccmarkets.com",
+    "entity_type": "category",
+    "id": "11a1b83f-ad49-433f-b040-5374d3b409fa",
+    "imageUrl": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF",
+    "name": "Annie's Certified Organic Honey Mustard",
+    "price": "$5.99",
+    "pricePerUnit": "N/A",
+    "rawTextContent": "HEADING : Organic Current price : $ 5.99 $ 5 99 Annie's Certified Organic Honey Mustard 9 oz Many in stock Add",
+    "timestamp": "2025-04-30#delivery.pccmarkets.com#Annie's Certified Organic Honey Mustard",
+    "ttl": "1748646906",
+    "url": "https://delivery.pccmarkets.com/store/pcc-community-markets/products/25290-annie-s-mustard-organic-honey-9-oz"
+  }
+]
+{{end}}
+
+{{template "no-preamble" .}}
