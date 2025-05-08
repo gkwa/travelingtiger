@@ -1,4 +1,5 @@
-* TravelingTiger
+* [DEPRECATED] TravelingTiger
+** ⚠️ This repository is no longer maintained and has been superseded by [[https://github.com/gkwa/pleasantpeacock][PleasantPeacock]]
 
 A command-line utility for managing AI prompts using composable golang templates.
 
